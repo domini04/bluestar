@@ -40,21 +40,33 @@ bluestar/
 ├── src/
 │   ├── bluestar/
 │   │   ├── __init__.py
-│   │   ├── agents/
-│   │   ├── tools/
-│   │   ├── nodes/
-│   │   └── utils/
+│   │   ├── config.py           # Environment configuration
+│   │   ├── core/              # Core infrastructure components
+│   │   │   ├── __init__.py
+│   │   │   ├── llm.py         # LLM integration & client management
+│   │   │   └── exceptions.py  # Custom exceptions
+│   │   ├── prompts/           # Prompt templates & instructions
+│   │   │   ├── __init__.py
+│   │   │   ├── analysis.py    # Commit analysis prompts
+│   │   │   ├── generation.py  # Blog generation prompts
+│   │   │   └── reflection.py  # Self-RAG prompts
+│   │   ├── formats/           # Output format structures
+│   │   │   ├── __init__.py
+│   │   │   └── blog.py        # Blog post templates
+│   │   ├── agents/            # LangGraph agents
+│   │   ├── tools/             # MCP-style tools (CommitFetcher, BlogPublisher)
+│   │   ├── nodes/             # LangGraph nodes (ContentSynthesizer, CommitAnalyzer)
+│   │   └── utils/             # Utility functions
 ├── tests/
-├── config/
 ├── docs/
-├── requirements.txt
+├── pyproject.toml
 └── README.md
 ```
 
 #### **2. Dependency Management**
-- Use `uv` or `poetry` for dependency management
-- Pin versions for reproducibility
-- Separate dev/prod dependencies
+    - Use `uv` or `poetry` for dependency management
+    - Pin versions for reproducibility
+    - Separate dev/prod dependencies
 
 #### **3. Configuration Management**
 ```python
@@ -172,28 +184,20 @@ Start → CommitFetcher → ContentSynthesizer → End
 - Handle different diff formats
 ```
 
-#### **2. Outline Generation**
-```python
-# Structured content planning
-- Convert analysis into blog post outline
-- Determine narrative flow
-- Identify key points to highlight
-- Structure technical details appropriately
-```
-
-#### **3. Enhanced ContentSynthesizer**
+#### **2. Enhanced ContentSynthesizer**
 ```python
 # Improved content generation
 - Accept structured analysis instead of raw commits
-- Use outline for content organization
+- Generate complete blog post directly from CommitAnalysis
 - Better integration of technical details
 - Improved narrative flow
+- Single LLM call for efficiency
 ```
 
-#### **4. Updated Agent Graph**
+#### **3. Updated Agent Graph**
 ```python
-# Enhanced workflow
-Start → CommitFetcher → CommitAnalyzer → OutlineGenerator → ContentSynthesizer → End
+# Simplified workflow (no outline generation step)
+Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 ```
 
 ### ✅ **Success Criteria**

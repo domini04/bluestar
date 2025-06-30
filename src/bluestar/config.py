@@ -10,7 +10,7 @@ from typing import Optional
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
-load_dotenv()  # Automatically loads .env file if it exists
+load_dotenv(override=True)  # Automatically loads .env file if it exists, overriding existing values
 
 
 class Config:
@@ -20,10 +20,11 @@ class Config:
         """Initialize configuration with environment variables and defaults."""
         # Project root directory
         self.project_root = Path(__file__).parent.parent.parent
-        
+        7963
         # LLM Provider-Model Mapping
         # User chooses provider: 'openai', 'claude', or 'gemini'
         # Model is automatically selected based on provider
+        # 여기 있는 모델명을 필요에 따라 변경
         self.llm_models = {
             "openai": "gpt-4.1-2025-04-14",
             "claude": "claude-opus-4-20250514", 
@@ -31,7 +32,7 @@ class Config:
         }
         
         # LLM Configuration
-        self.llm_provider = os.getenv("BLUESTAR_LLM_PROVIDER", "openai").lower()
+        self.llm_provider = os.getenv("BLUESTAR_LLM_PROVIDER", "gemini").lower()
         
         # Validate provider and get corresponding model
         if self.llm_provider not in self.llm_models:
