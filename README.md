@@ -33,7 +33,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
 
 - **Core**: Python 3.13+, LangGraph, LangChain
 - **AI**: OpenAI/Anthropic APIs, Self-RAG patterns
-- **Integration**: MCP protocol, Git APIs
+- **Integration**: MCP protocol, GitHub API (primary), Git CLI (fallback)
 - **Testing**: pytest
 - **Package Management**: uv
 
@@ -42,7 +42,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
 ### Prerequisites
 
 - Python 3.13+
-- Git repository access
+- GitHub API access (primary) or local Git repository access (fallback)
 - LLM API access (OpenAI, Anthropic, etc.)
 - Blog platform API credentials (optional for later phases)
 
@@ -69,6 +69,7 @@ Set the following environment variables in your `.env` file:
 BLUESTAR_LLM_PROVIDER=openai
 BLUESTAR_LLM_MODEL=gpt-4o-mini  
 BLUESTAR_LLM_API_KEY=your_api_key_here
+GITHUB_TOKEN=your_github_token_here
 BLUESTAR_LOG_LEVEL=INFO
 ```
 

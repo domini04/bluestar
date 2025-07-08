@@ -62,4 +62,31 @@ CommitData → CommitAnalysis → GhostBlogPost
 
 ---
 
-*Last Updated: June 30, 2025* 
+### **January 20, 2025 - CommitFetcher Architecture: API-First for MCP Distribution**
+
+**Issue**: Initial development plan specified local Git CLI approach for commit data extraction, but this created significant barriers for MCP server distribution and user adoption.
+
+**Decision**: Switched to GitHub API-first approach with local Git CLI as Phase 2 fallback option.
+
+**Reasoning**: 
+- **MCP Distribution**: API-first eliminates local dependencies (Git CLI installation, repository access) that complicate MCP server deployment
+- **User Experience**: Simple GitHub token configuration vs complex path setup and Git CLI requirements
+- **Coverage**: GitHub hosts 90%+ of development projects, making API approach cover primary use cases
+- **Security Model**: Better security boundaries for distributed MCP servers vs local file system access
+- **Scalability**: Built-in rate limiting and batch processing capabilities through GitHub API
+
+**Impact**:
+- **Phase 1**: GitHub API implementation (primary path)
+- **Phase 2**: Local Git CLI support (fallback for self-hosted repos)
+- **Configuration**: `GITHUB_TOKEN` required, `BLUESTAR_ALLOW_LOCAL_GIT` optional
+- **Architecture**: Hybrid detection system (API vs local) for maximum flexibility
+
+**Technical Benefits**:
+- Eliminates external MCP server dependencies (e.g., cli-mcp-server)
+- Works out-of-the-box for most users without local setup
+- Provides clear upgrade path for advanced use cases
+- Aligns with modern development workflows (hosted repositories)
+
+---
+
+*Last Updated: January 20, 2025* 

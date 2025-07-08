@@ -17,7 +17,7 @@ BlueStar is an AI agent designed to automatically generate and publish developer
 ## Development Environment Prerequisites
 
 - Python 3.13+
-- Git repository access
+- GitHub API access (primary) or Git repository access (fallback)
 - LLM API access (OpenAI, Anthropic, etc.)
 - Blog platform API credentials
 - Development environment with LangGraph, LangChain dependencies
@@ -113,12 +113,13 @@ bluestar/
 
 #### **1. CommitFetcher Tool (MCP Style)**
 ```python
-# Initial implementation
-- Accept commit SHA and repository path
-- Extract commit message and diff using git commands
-- Return structured commit data
+# API-first implementation for MCP distribution
+- Accept commit SHA and repository identifier (GitHub repo URL/path)
+- Extract commit data via GitHub API (primary approach)
+- Return structured commit data (CommitData model)
 - Wrap as LangChain/LangGraph tool
-- Handle basic error cases (invalid SHA, repo access)
+- Handle API errors (rate limits, invalid SHA, repo access)
+- Require GitHub token configuration
 ```
 
 #### **2. InstructionManager (Basic)**
@@ -151,11 +152,12 @@ Start → CommitFetcher → ContentSynthesizer → End
 ```
 
 ### ✅ **Success Criteria**
-- [ ] Single commit data successfully extracted
+- [ ] Single commit data successfully extracted via GitHub API
 - [ ] Basic blog content generated from commit
 - [ ] LangGraph workflow executes end-to-end  
 - [ ] Output is readable and contextually relevant
-- [ ] Error handling prevents crashes
+- [ ] API error handling prevents crashes
+- [ ] Works without local Git CLI dependencies
 
 ### 🧪 **Testing Strategy**
 - Unit tests for each component
@@ -217,11 +219,13 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 
 ### 📋 **Tasks**
 
-#### **1. Multiple Commit Processing**
+#### **1. Multiple Commit Processing & Local Git Support**
 ```python
-# Scale CommitFetcher
-- Accept commit ranges or SHA lists
-- Batch processing capabilities
+# Scale CommitFetcher + add local support
+- Accept commit ranges or SHA lists via GitHub API
+- Batch processing capabilities with API rate limiting
+- Add local Git CLI support as fallback option
+- Hybrid source detection (API vs local)
 - Commit relationship analysis
 - Context window management
 ```
@@ -245,9 +249,11 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 ```
 
 ### ✅ **Success Criteria**
-- [ ] Multiple commits processed coherently
+- [ ] Multiple commits processed coherently via API
+- [ ] Local Git CLI support working as fallback
 - [ ] Self-RAG improves content quality measurably
 - [ ] Commit relationships identified correctly
+- [ ] API rate limiting handled gracefully
 - [ ] Processing time remains reasonable
 
 ---
@@ -274,10 +280,12 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 #### **2. User Input System**
 ```python
 # Commit selection interface
-- CLI argument parsing
-- Interactive commit selection
-- Repository browsing capabilities
-- Validation and error handling
+- GitHub repository URL/identifier parsing
+- CLI argument parsing for commit SHAs
+- Interactive commit selection via API
+- Repository browsing capabilities through GitHub API
+- Local repository detection and fallback
+- Validation and error handling for both API and local sources
 ```
 
 #### **3. Human-in-the-Loop (ContextAssessorPrompter)**
@@ -408,7 +416,8 @@ Choose one to implement:
 |------|--------|------------|
 | LLM API failures | High | Retry logic, fallback models |
 | Poor content quality | High | Self-RAG, human validation |
-| Git access issues | Medium | Error handling, validation |
+| GitHub API rate limits | Medium | Rate limiting, API key rotation, local fallback |
+| Git access issues | Medium | GitHub API primary, local Git CLI fallback |
 | Blog API limits | Medium | Rate limiting, queuing |
 | Context overflow | Medium | Token management, chunking |
 | User interaction complexity | Low | Simple CLI, clear prompts |
@@ -423,7 +432,8 @@ Choose one to implement:
 - Zero crashes on valid input
 
 ### **Phase 2 Success**  
-- Multi-commit coherent posts
+- Multi-commit coherent posts via API and local Git
+- Local Git CLI support functional
 - Quality improvement measurable
 - Analysis accuracy > 70%
 
@@ -442,26 +452,26 @@ Choose one to implement:
 ## Next Immediate Actions
 
 ### 🚀 **Priority 1: Phase 1 Implementation**
-1. **CommitFetcher**: Reliable git data extraction
+1. **CommitFetcher**: Reliable GitHub API data extraction
 2. **ContentSynthesizer**: Basic LLM blog generation  
 3. **LangGraph Integration**: Simple workflow execution
-4. **First Generated Output**: Validate core concept
+4. **First Generated Output**: Validate core concept with hosted repositories
 
 ### 📝 **Implementation Order**
 ```python
 # Week 1: Foundation
 - Project setup and configuration
 - Basic LangGraph structure
-- CommitFetcher implementation
+- GitHub API CommitFetcher implementation
 
 # Week 2: Core Generation
 - ContentSynthesizer development
-- End-to-end workflow
+- End-to-end workflow with GitHub API
 - Basic testing and validation
 
 # Week 3: Quality & Testing
-- Error handling improvement
-- Comprehensive testing
+- API error handling improvement
+- Comprehensive testing (API mocking)
 - Documentation and cleanup
 ```
 
