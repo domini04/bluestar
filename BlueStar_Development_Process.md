@@ -10,7 +10,7 @@
 
 BlueStar is an AI agent designed to automatically generate and publish developer blog posts by analyzing user-selected Git commits. The agent uses LangGraph for orchestration, Self-RAG for content refinement, and MCP for tool integration.
 
-**Core Workflow**: `Manual Trigger → Fetch Commits → Analyze → Generate Outline → [Optional: Human Input] → Generate Post → Publish`
+**Core Workflow**: `Input Collection → Commit Fetching → Analysis → Content Generation → Human Review Loop → Publishing Decision → Optional Blog Publishing`
 
 ---
 
@@ -64,9 +64,9 @@ bluestar/
 ```
 
 #### **2. Dependency Management**
-    - Use `uv` or `poetry` for dependency management
-    - Pin versions for reproducibility
-    - Separate dev/prod dependencies
+- Use `uv` or `poetry` for dependency management
+- Pin versions for reproducibility
+- Separate dev/prod dependencies
 
 #### **3. Configuration Management**
 ```python
@@ -143,19 +143,24 @@ bluestar/
 
 #### **4. Basic Agent Graph**
 ```python
-# LangGraph workflow
-Start → CommitFetcher → ContentSynthesizer → End
-- Manual trigger mechanism
-- State passing between nodes
-- Basic error propagation
-- Success/failure reporting
+# Enhanced LangGraph workflow with human-in-the-loop
+Start → InputCollector → CommitFetcher → CommitAnalyzer → ContentSynthesizer → 
+HumanReviewLoop → PublishingDecision → End
+- User input collection and validation
+- State passing between nodes with user instructions
+- Human review and iterative improvement
+- Optional blog publishing
+- Error propagation and recovery
 ```
 
 ### ✅ **Success Criteria**
 - [ ] Single commit data successfully extracted via GitHub API
-- [ ] Basic blog content generated from commit
-- [ ] LangGraph workflow executes end-to-end  
-- [ ] Output is readable and contextually relevant
+- [ ] User input collection and validation working
+- [ ] LLM-powered commit analysis produces structured insights
+- [ ] Blog content generation incorporates user instructions
+- [ ] Human review loop enables iterative improvement
+- [ ] Draft output saved locally when publishing declined
+- [ ] LangGraph workflow executes end-to-end reliably
 - [ ] API error handling prevents crashes
 - [ ] Works without local Git CLI dependencies
 

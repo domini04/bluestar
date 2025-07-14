@@ -8,7 +8,7 @@ BlueStar is an AI agent designed to automatically generate and publish developer
 
 BlueStar analyzes Git commits to understand development progress and context, then generates developer blog posts ("coding diaries") based on this analysis, guided by predefined instructions and optional user input.
 
-**Core Workflow**: `Manual Trigger → Fetch Commits → Analyze → Generate Outline → [Optional: Human Input] → Generate Post → Publish`
+**Core Workflow**: `Input Collection → Commit Fetching → Analysis → Content Generation → Human Review Loop → Publishing Decision → Optional Blog Publishing`
 
 ## Features
 
@@ -31,10 +31,12 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - ✅ GitHub API client with authentication and rate limiting
   - ✅ Commit data parsing and structured models
   - ✅ Real GitHub API integration tested successfully
-  - 🔄 CommitFetcher tool (LangGraph integration) - *Next*
+  - ✅ LangGraph architecture designed with user feedback integration
+  - 🔄 AgentState and node implementations - *Next*
+  - 🆕 CommitFetcher tool (LangGraph integration)
   - 🆕 CommitAnalyzer node (LLM-powered analysis)
-  - 🆕 ContentSynthesizer node (blog generation)
-  - 🆕 Basic LangGraph workflow orchestration
+  - 🆕 ContentSynthesizer node with human-in-the-loop
+  - 🆕 Complete workflow orchestration
 - **Phase 2**: Analysis Enhancement & Multi-commit support
 - **Phase 3**: Publishing Integration & Human-in-the-Loop
 - **Phase 4**: Advanced Features & MCP Packaging

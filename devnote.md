@@ -42,6 +42,36 @@
 
 ---
 
+### **July 9, 2025 - AgentState Architecture: State-First Design Pattern**
+
+**Issue**: LangGraph requires careful state management between nodes, but initial design lacked clear data flow structure.
+
+**Decision**: Adopted comprehensive AgentState model with distinct sections for input, processing, human-interaction, control flow, and metadata.
+
+**Reasoning**: LangGraph's effectiveness depends on clean state transitions between nodes. The AgentState serves as the single source of truth for workflow progress, enabling proper conditional routing, error handling, and human-in-the-loop functionality. This state-first approach ensures data consistency and makes the workflow more maintainable and debuggable.
+
+---
+
+### **July 9, 2025 - Human-in-the-Loop: Iteration-Bounded Review Cycles**
+
+**Issue**: Blog generation quality may require user feedback, but unlimited iteration could create infinite loops or poor user experience.
+
+**Decision**: Implemented bounded review cycles with maximum 3 iterations and explicit user satisfaction tracking in AgentState.
+
+**Reasoning**: Prevents infinite loops while maintaining quality control. The iteration limit forces both the LLM and user to focus on meaningful improvements rather than endless tweaking. User satisfaction tracking provides clear exit criteria for the review loop.
+
+---
+
+### **July 9, 2025 - Workflow Simplification: Direct Analysis-to-Content Generation**
+
+**Issue**: Complex multi-step workflows with intermediate planning phases can reduce efficiency and increase failure points.
+
+**Decision**: Maintained the simplified CommitAnalysis → GhostBlogPost flow without intermediate outline generation in LangGraph implementation.
+
+**Reasoning**: Building on the established principle that CommitAnalysis contains sufficient planning information for direct blog generation. This maintains the 50% LLM call reduction and architectural simplicity while ensuring the LangGraph implementation doesn't reintroduce unnecessary complexity.
+
+---
+
 ## Architecture Evolution Summary
 
 **Original Workflow**: 
@@ -89,4 +119,73 @@ CommitData → CommitAnalysis → GhostBlogPost
 
 ---
 
-*Last Updated: January 20, 2025* 
+### **July 11, 2025 - LangGraph AgentState Design: Human-in-the-Loop Simplification**
+
+**Issue**: Human-in-the-loop management design required decisions on feedback structure, satisfaction measurement, and iteration tracking complexity.
+
+**Decision**: Adopted simplified natural language approach with LangGraph checkpointing integration:
+- **Feedback Structure**: Simple natural language strings instead of categorized objects
+- **Satisfaction Measurement**: Boolean based on feedback presence (no explicit ratings)
+- **Iteration Tracking**: Eliminated from AgentState - rely on LangGraph's automatic checkpointing
+
+**Reasoning**: LLMs excel at parsing natural language intent without complex categorization. LangGraph's checkpointing automatically preserves conversation history, making manual iteration tracking redundant. This leverages built-in capabilities while simplifying state management and improving user experience through natural interaction patterns.
+
+**Impact**:
+- Simplified AgentState structure (removed iteration counters, feedback history)
+- Natural UX (users provide feedback in their own words)
+- LangGraph-native approach (automatic context preservation)
+
+---
+
+### **July 11, 2025 - Error Handling Strategy: Leverage Existing Exception Hierarchy**
+
+**Issue**: LangGraph workflow needed error handling strategy without duplicating existing tool-level error management.
+
+**Decision**: Use existing BlueStar exception hierarchy with simple workflow termination:
+- **Error Granularity**: Reuse comprehensive exception system from `src/bluestar/core/exceptions.py`
+- **Recovery Strategy**: Terminate workflow with clear user guidance (no complex auto-recovery)
+- **Error Categorization**: Use existing domain-appropriate exceptions (ConfigurationError, RepositoryError, LLMError)
+
+**Reasoning**: Existing exception system already provides robust error handling with user guidance. LangGraph should focus on workflow orchestration rather than duplicating lower-level error management. Tools already handle appropriate retries and error categorization.
+
+**Impact**:
+- No duplication of error handling logic
+- Consistent error experience across application
+- Simple `errors: List[str]` in AgentState for user-facing messages
+
+---
+
+### **July 11, 2025 - Workflow Control Decisions: Progress Display and Metrics Separation**
+
+**Issue**: Workflow control strategy needed decisions on progress tracking, resumption capability, and performance metrics integration.
+
+**Decision**: 
+- **Progress Tracking**: User-facing display via LangGraph native events (no AgentState storage)
+- **Resumption**: No resumption capability for MVP (focus on core features)
+- **Performance Metrics**: Separate metrics system outside core workflow
+
+**Reasoning**: LangGraph's streaming system provides progress tracking without cluttering business logic state. Resumption adds complexity without clear MVP value. Performance metrics require separate implementation for effective quality improvement measurement.
+
+**Impact**:
+- Cleaner AgentState focused on business logic
+- Simpler workflow implementation
+- Dedicated metrics strategy for blog post quality improvement (documented in `performance_metrics.md`)
+
+---
+
+### **July 11, 2025 - Performance Metrics Strategy Requirement**
+
+**Issue**: BlueStar needs measurement system for improving blog post generation quality and user experience.
+
+**Decision**: Implement dedicated metrics system targeting blog post quality as primary focus area.
+
+**Key Metrics Identified**:
+- **Primary**: Blog post quality (readability, technical accuracy, completeness, narrative coherence)
+- **Secondary**: User experience (iteration efficiency, first draft acceptance rate)
+- **Operational**: System performance (processing time, token usage, API efficiency)
+
+**Next Steps Required**: Implement automated quality scoring system to measure and improve generation output. Specific measurement approach and implementation timing to be determined during development phase.
+
+---
+
+*Last Updated: July 11, 2025* 
