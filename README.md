@@ -92,8 +92,17 @@ BLUESTAR_LOG_LEVEL=INFO
 ### Usage
 
 ```bash
-# Run the main application
+# Interactive CLI mode (development)
 python -m src.bluestar.main
+
+# CLI with command line arguments
+python -m src.bluestar.main --repo microsoft/vscode --commit abc123def456
+
+# CLI with additional instructions
+python -m src.bluestar.main --repo https://github.com/microsoft/vscode --commit abc123def456 --instructions "Focus on performance improvements"
+
+# Check configuration
+python -m src.bluestar.main --config-check
 
 # Run tests
 pytest tests/

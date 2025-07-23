@@ -210,4 +210,173 @@ class GitHubClient:
     @property
     def rate_limit_info(self) -> Optional[GitHubRateLimit]:
         """Get current rate limit information."""
-        return self._rate_limit 
+        return self._rate_limit
+    
+    def get_repository_metadata(self, owner: str, repo: str) -> Dict[str, Any]:
+        """
+        Fetch repository metadata for project context.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            
+        Returns:
+            Dictionary with repository metadata (description, language, topics, etc.)
+        """
+        endpoint = f"repos/{owner}/{repo}"
+        response = self._make_request(endpoint)
+        
+        return {
+            "description": response.get("description") or "",
+            "language": response.get("language") or "unknown",
+            "topics": response.get("topics", []),
+            "stars": response.get("stargazers_count", 0),
+            "license": response.get("license", {}).get("name") if response.get("license") else None,
+            "created_at": response.get("created_at"),
+            "updated_at": response.get("updated_at")
+        }
+    
+    def get_readme_summary(self, owner: str, repo: str, sha: str) -> Optional[str]:
+        """
+        Get first 1000 chars of README for context.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            sha: Commit SHA to get README at specific point
+            
+        Returns:
+            First 1000 characters of README content, or None if not found
+        """
+        try:
+            endpoint = f"repos/{owner}/{repo}/readme?ref={sha}"
+            response = self._make_request(endpoint)
+            
+            if response.get("type") == "file" and "content" in response:
+                import base64
+                content = base64.b64decode(response["content"]).decode("utf-8")
+                return content[:1000]  # Token optimization
+            
+        except Exception:
+            return None
+        
+        return None
+    
+    def get_primary_config_file(self, owner: str, repo: str, sha: str) -> Optional[Dict[str, Any]]:
+        """
+        Get main configuration file based on language detection.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            sha: Commit SHA to get config at specific point
+            
+        Returns:
+            Dictionary with config file info and content, or None if not found
+        """
+        # Try common config files in order of preference
+        config_files = [
+            "package.json",      # Node.js
+            "pyproject.toml",    # Python (modern)
+            "requirements.txt",  # Python (legacy)
+            "pom.xml",          # Java/Maven
+            "build.gradle",     # Java/Gradle
+            "Cargo.toml",       # Rust
+            "go.mod",           # Go
+            "composer.json",    # PHP
+        ]
+        
+        for config_file in config_files:
+            try:
+                endpoint = f"repos/{owner}/{repo}/contents/{config_file}?ref={sha}"
+                response = self._make_request(endpoint)
+                
+                if response.get("type") == "file" and "content" in response:
+                    import base64
+                    content = base64.b64decode(response["content"]).decode("utf-8")
+                    
+                    return {
+                        "file_name": config_file,
+                        "content": content[:2000],  # Token limit
+                        "project_type": self._detect_project_type(config_file)
+                    }
+                    
+            except Exception:
+                continue
+        
+        return None
+    
+    def get_core_context(self, owner: str, repo: str, sha: str) -> Dict[str, Any]:
+        """
+        Orchestrate core context fetching with error handling.
+        
+        Args:
+            owner: Repository owner
+            repo: Repository name
+            sha: Commit SHA for context
+            
+        Returns:
+            Dictionary with all available core context data
+        """
+        from datetime import datetime, timezone
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        context = {
+            "repository_metadata": None,
+            "readme_summary": None,
+            "primary_config": None,
+            "project_type": "unknown",
+            "fetch_timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+        # Fetch repository metadata
+        try:
+            context["repository_metadata"] = self.get_repository_metadata(owner, repo)
+            logger.debug(f"✅ Repository metadata fetched for {owner}/{repo}")
+        except Exception as e:
+            logger.debug(f"❌ Repository metadata fetch failed: {e}")
+        
+        # Fetch README summary
+        try:
+            readme = self.get_readme_summary(owner, repo, sha)
+            if readme:
+                context["readme_summary"] = readme
+                logger.debug(f"✅ README summary fetched ({len(readme)} chars)")
+        except Exception as e:
+            logger.debug(f"❌ README summary fetch failed: {e}")
+        
+        # Fetch primary config
+        try:
+            config_data = self.get_primary_config_file(owner, repo, sha)
+            if config_data:
+                context["primary_config"] = config_data
+                context["project_type"] = config_data["project_type"]
+                logger.debug(f"✅ Primary config fetched: {config_data['file_name']}")
+        except Exception as e:
+            logger.debug(f"❌ Primary config fetch failed: {e}")
+        
+        return context
+    
+    def _detect_project_type(self, config_file: str) -> str:
+        """
+        Detect project type from config file name.
+        
+        Args:
+            config_file: Name of the configuration file
+            
+        Returns:
+            String identifier for project type
+        """
+        type_mapping = {
+            "package.json": "javascript/node",
+            "pyproject.toml": "python",
+            "requirements.txt": "python", 
+            "pom.xml": "java/maven",
+            "build.gradle": "java/gradle",
+            "Cargo.toml": "rust",
+            "go.mod": "go",
+            "composer.json": "php"
+        }
+        return type_mapping.get(config_file, "unknown") 

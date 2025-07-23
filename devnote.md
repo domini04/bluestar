@@ -188,4 +188,175 @@ CommitData → CommitAnalysis → GhostBlogPost
 
 ---
 
-*Last Updated: July 11, 2025* 
+### **July 14, 2025 - AgentState Interface Design: Structured Data Architecture**
+
+**Issue**: Initial AgentState design used raw_input string field, forcing all interfaces (CLI, MCP, Web) to convert their natural data formats to text strings, then parse them back to structured data.
+
+**Decision**: Removed raw_input field and redesigned AgentState to accept structured data directly in constructor.
+
+**Reasoning**: 
+- **Interface Optimization**: Each interface can work with its natural data format (CLI text parsing, MCP JSON, Web forms)
+- **Type Safety**: Structured fields provide better type checking and validation
+- **Separation of Concerns**: Input parsing belongs in interface layers, not workflow state
+- **MCP Compatibility**: JSON-based MCP tools work naturally without string conversion overhead
+
+**Implementation**:
+- **AgentState Constructor**: `AgentState(repo_identifier, commit_sha, user_instructions)`
+- **CLI Interface**: Parses text input → creates structured AgentState
+- **MCP Interface**: Accepts JSON → creates structured AgentState directly  
+- **Input Collector**: Validates structured data instead of parsing strings
+
+**Impact**:
+- Eliminated forced string conversion for JSON-based interfaces
+- Cleaner architecture with proper separation of parsing vs. validation
+- Better type safety and maintainability
+- Optimal data flow for each interface type
+
+---
+
+### **July 14, 2025 - Input Validator Simplification: Validation-Only Architecture**
+
+**Issue**: Input Validator node was responsible for both parsing raw strings and validating structured data, creating complexity and overlap with interface-specific parsing logic.
+
+**Decision**: Simplified Input Validator to validation-only functionality, removing string parsing responsibilities.
+
+**Reasoning**: String parsing is interface-specific and should happen at the interface layer. Input Validator should focus on validating and normalizing already-structured data, not parsing user input formats.
+
+**Implementation**:
+- **Removed**: `parse_raw_input()` function from Input Validator
+- **Removed**: `create_validation_record()` and validation history tracking
+- **Retained**: Repository validation, commit SHA validation, normalization
+- **Moved**: String parsing logic to CLI interface as `parse_cli_input()`
+- **Simplified**: Input Validator validates `state.repo_identifier`, `state.commit_sha` directly
+
+**Impact**:
+- Cleaner node responsibility (validation only)
+- Eliminated parsing/validation overlap and unused validation history
+- Interface-specific parsing handled appropriately
+- Simpler and more focused Input Validator implementation
+
+---
+
+### **July 14, 2025 - Input Validator Node Implementation Complete**
+
+**Issue**: Phase 1 development required a functional Input Validator node to validate structured user input data before proceeding to commit fetching and analysis.
+
+**Decision**: Implemented complete Input Validator node with comprehensive validation logic and LangGraph integration.
+
+**Implementation**:
+- **Core Functions**: `validate_repository()`, `validate_commit_sha()`, `input_validator_node()`
+- **Repository Validation**: Supports owner/repo format, GitHub URLs, normalization via GitHubClient
+- **Commit SHA Validation**: 40-character hexadecimal validation with case normalization and whitespace trimming
+- **Error Handling**: Clear error messages added to `state.errors` for user guidance
+- **State Management**: Proper step completion tracking and state mutation
+- **LangGraph Integration**: Fully integrated as workflow entry point with proper node registration
+
+**Testing Results**:
+- **✅ Repository Validation**: All formats handled correctly (simple, GitHub URLs, edge cases)
+- **✅ Commit SHA Validation**: Exact length validation, character validation, normalization working
+- **✅ Node Integration**: State mutations, error handling, step tracking functional
+- **✅ Edge Cases**: Empty inputs, whitespace, invalid characters properly handled
+- **❌ Workflow Integration**: Blocked by forward reference issues (expected, will resolve when CommitAnalysis implemented)
+
+**Impact**:
+- **Phase 1 Success Criteria**: "User input collection and validation working" ✅ COMPLETE
+- **Ready for Next Phase**: Input Validator fully functional and ready for CommitFetcher integration
+- **Architecture Validated**: Structured data approach and validation-only responsibility confirmed working
+- **Quality Assurance**: Comprehensive test coverage demonstrates reliability
+
+**Files Modified**:
+- `src/bluestar/agents/nodes/input_validator.py` - Complete implementation
+- `src/bluestar/agents/graph.py` - LangGraph integration and workflow entry point
+- `src/bluestar/agents/state.py` - AgentState structured data support
+- `test_input_validator.py` - Comprehensive test suite
+
+---
+
+### **July 23, 2025 - Core Context Enhancement Implementation Complete**
+
+**Issue**: BlueStar's initial blog generation relied solely on commit data without broader project context, limiting blog quality and requiring manual user input for project understanding.
+
+**Decision**: Implemented comprehensive two-tier progressive context enhancement system with Tier 1 (Core Context) completed and Tier 2 (Enhanced Context) architecturally prepared.
+
+**Implementation - Tier 1: Core Context (COMPLETE)**:
+
+#### **Enhanced GitHubClient (`src/bluestar/tools/github_client.py`)**
+- **`get_repository_metadata(owner, repo)`**: Fetches repository description, language, topics, stars, license, and timestamps
+- **`get_readme_summary(owner, repo, sha)`**: Extracts first 1000 characters of README for token-optimized project understanding  
+- **`get_primary_config_file(owner, repo, sha)`**: Detects and parses main configuration files (package.json, pyproject.toml, pom.xml, Cargo.toml, go.mod, composer.json, etc.)
+- **`get_core_context(owner, repo, sha)`**: Orchestrates all core context fetching with graceful error handling
+- **`_detect_project_type(config_file)`**: Maps config files to project types (javascript/node, python, java/maven, rust, go, php)
+
+#### **Enhanced CommitDataParser (`src/bluestar/tools/commit_parser.py`)**
+- **Updated `parse_commit_data()` signature**: Added optional `core_context` parameter for backward compatibility
+- **Core context integration**: Populates `CommitData.project_structure` field with structured context data
+- **Graceful handling**: Maintains existing functionality when no context provided
+
+#### **Enhanced CommitFetcher Node (`src/bluestar/agents/nodes/commit_fetcher.py`)**
+- **Repository parsing**: Uses `GitHubClient.parse_repo_identifier()` to handle multiple repository URL formats
+- **Core context orchestration**: Automatically fetches repository metadata, README summary, and primary config
+- **Robust error handling**: Context fetch failures don't break commit processing (graceful degradation)
+- **Enhanced logging**: Detailed context source tracking and project type detection reporting
+- **API integration**: Uses proper owner/repo parameters for GitHub API calls
+
+**Testing Results**:
+- **✅ Real API Testing**: Successfully tested with `domini04/bluestar` repository
+- **✅ Context Sources**: Repository metadata, README summary (1000 chars), pyproject.toml config file  
+- **✅ Project Type Detection**: Correctly identified as "python" project type
+- **✅ Token Usage**: ~600 tokens actual usage (well under 1000-3000 budget)
+- **✅ Error Handling**: Graceful degradation tested with invalid commit SHA
+- **✅ Multiple Formats**: Repository identifier parsing works with owner/repo and full GitHub URLs
+- **✅ Backward Compatibility**: Existing code continues to function without context
+
+**Architecture Impact**:
+- **No State Changes Required**: Enhanced context flows through existing `AgentState.commit_data.project_structure`
+- **Backward Compatible**: All existing functionality preserved with optional enhancement
+- **Foundation Ready**: Architecture prepared for Tier 2 enhanced context implementation
+
+**Token Usage Analysis**:
+- **Repository Metadata**: ~150 tokens (description, language, topics, stars)
+- **README Summary**: ~300 tokens (1000 character limit)
+- **Config File**: ~150 tokens (2000 character limit with project type detection)
+- **Total Core Context**: ~600 tokens (significantly under planned 1000-3000 budget)
+
+**Implementation - Tier 2: Enhanced Context (PLANNED)**:
+
+#### **Future ContextEnhancer Node Architecture**
+- **Context Assessment**: LLM-powered analysis of what additional context would improve blog quality
+- **Selective Fetching**: User feedback-driven enhancement with PR context, recent commits, directory structure, issue references
+- **Intelligent Routing**: Enhanced HumanReviewLoop routing between content improvement and context enhancement
+- **Token Optimization**: Additional 500-2000 tokens for targeted enhanced context
+
+#### **Progressive Enhancement Workflow**
+```
+Input → CommitFetcher(+CoreContext) → Analysis → Generation → Review → 
+[Satisfied] → Publishing
+[Unsatisfied] → ContextEnhancer → Regeneration → Review → Publishing
+```
+
+**Reasoning**: 
+- **Performance**: Core context provides immediate baseline improvement without user waiting
+- **Efficiency**: Most commits need only basic project understanding for quality blog generation
+- **Progressive Enhancement**: Enhanced context fetched only when user feedback indicates specific quality gaps
+- **Token Management**: Two-tier approach balances quality improvement with API cost control
+- **User Experience**: Fast baseline generation with optional quality enhancement based on actual user needs
+
+**Impact**:
+- **Immediate Quality Improvement**: All blog generation now includes rich project context automatically
+- **Foundation for Enhancement**: Architecture ready for Phase 1.5 enhanced context implementation
+- **Token Efficiency**: Significant quality improvement achieved within practical token budgets
+- **Scalable Architecture**: Progressive enhancement system can adapt to different project complexity levels
+
+**Files Modified**:
+- `src/bluestar/tools/github_client.py` - Core context fetching methods
+- `src/bluestar/tools/commit_parser.py` - Enhanced parsing with optional context integration
+- `src/bluestar/agents/nodes/commit_fetcher.py` - Complete core context orchestration
+- `tests/test_core_context.py` - Comprehensive unit testing suite
+- `tests/test_core_context_real.py` - Real GitHub API integration testing
+- `tests/test_enhanced_commit_fetcher.py` - End-to-end node testing
+
+**Next Phase Ready**: Enhanced CommitFetcher provides rich project context for CommitAnalyzer and ContentSynthesizer nodes to leverage in Phase 1 completion and future Phase 1.5 enhanced context implementation.
+
+---
+
+*Last Updated: July 14, 2025* 

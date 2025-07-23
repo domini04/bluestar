@@ -24,7 +24,8 @@ class CommitDataParser:
     def parse_commit_data(
         commit_response: Dict[str, Any], 
         diff_content: str,
-        repo_identifier: str
+        repo_identifier: str,
+        core_context: Optional[Dict[str, Any]] = None
     ) -> CommitData:
         """
         Parse GitHub API commit response into CommitData model.
@@ -33,6 +34,7 @@ class CommitDataParser:
             commit_response: GitHub API commit response
             diff_content: Raw diff content from GitHub API
             repo_identifier: Repository identifier (owner/repo)
+            core_context: Optional core context from enhanced GitHub API calls
             
         Returns:
             Structured CommitData object
@@ -81,7 +83,7 @@ class CommitDataParser:
                 diffs=diffs,
                 repository_path=repo_identifier,
                 tags=tags,
-                project_structure=None  # Optional, can be enhanced later
+                project_structure=core_context  # Enhanced with core context from GitHub API
             )
             
         except KeyError as e:
