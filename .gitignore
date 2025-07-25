@@ -11,3 +11,7 @@ wheels/
 
 # Environment variables (contains API keys)
 .env
+
+# Documents
+todo.md
+recc.md
