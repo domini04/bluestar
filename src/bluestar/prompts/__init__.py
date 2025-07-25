@@ -1,16 +1,12 @@
 """
-BlueStar Prompt Templates & Instructions
+BlueStar Prompt Templates
 
-Centralized prompt management for commit analysis, blog generation, and Self-RAG.
+LangChain prompt templates for various LLM operations.
+Centralized location for all prompt engineering and template management.
 """
 
-# Import prompt modules when they're created
-# from .analysis import CommitAnalysisPrompts
-# from .generation import BlogGenerationPrompts  
-# from .reflection import SelfRAGPrompts
+from .commit_analysis import create_commit_analysis_prompt
 
 __all__ = [
-    # "CommitAnalysisPrompts",
-    # "BlogGenerationPrompts", 
-    # "SelfRAGPrompts"
+    "create_commit_analysis_prompt"
 ] 

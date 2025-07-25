@@ -19,4 +19,5 @@ dependencies = [
     "pytest-mock>=3.14.1",
     "pytest-cov>=6.2.1",
     "pytest-parametrize>=1.4.0",
+    "langsmith>=0.3.45",
 ]

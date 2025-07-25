@@ -1,10 +1,11 @@
 """
 Shared pytest fixtures for BlueStar testing.
 
-Provides common test setup, mocked dependencies, and test data.
+Provides common test setup, mocked dependencies, test data, and LangSmith tracing.
 """
 
 import pytest
+import os
 from unittest.mock import Mock, patch
 from pathlib import Path
 
@@ -170,4 +171,45 @@ def clean_config():
     """Ensure clean configuration state for each test."""
     # This will be used to reset any global config state
     yield
-    # Cleanup after test if needed 
+    # Cleanup after test if needed
+
+
+# LangSmith Tracing Fixtures
+@pytest.fixture
+def langsmith_test_env(monkeypatch):
+    """Set up LangSmith environment variables for testing."""
+    monkeypatch.setenv("LANGSMITH_TRACING", "true")
+    monkeypatch.setenv("LANGSMITH_API_KEY", "test_langsmith_key")
+    monkeypatch.setenv("LANGSMITH_PROJECT", "bluestar-tests")
+    monkeypatch.setenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
+
+
+@pytest.fixture
+def langsmith_disabled_env(monkeypatch):
+    """Disable LangSmith tracing for testing."""
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")
+    monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
+
+
+@pytest.fixture
+def enable_test_tracing(langsmith_test_env):
+    """
+    Enable LangSmith tracing for integration tests.
+    
+    Use this fixture when you want to test the actual LangChain-LangSmith integration
+    with real tracing (but mocked LLM responses).
+    """
+    from src.bluestar.core.tracing import setup_langsmith_tracing
+    
+    # Set up tracing for tests
+    success = setup_langsmith_tracing("bluestar-integration-tests")
+    
+    yield success
+
+
+@pytest.fixture
+def mock_tracing_setup():
+    """Mock LangSmith tracing setup for unit tests."""
+    with patch('src.bluestar.core.tracing.setup_langsmith_tracing') as mock_setup:
+        mock_setup.return_value = True
+        yield mock_setup 

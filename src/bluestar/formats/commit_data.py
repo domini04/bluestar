@@ -91,39 +91,65 @@ class CommitData(BaseModel):
 
 
 class CommitAnalysis(BaseModel):
-    """Structured analysis results from CommitAnalyzer node."""
+    """
+    AI-powered analysis of a Git commit for blog generation.
     
-    commit_data: CommitData = Field(description="Original commit data")
+    This model structures the output from LLM analysis to provide
+    consistent, reliable data for blog post generation.
+    """
     
-    # Analysis results
-    commit_types: List[Literal["feature", "bugfix", "refactor", "docs", "test", "chore", "breaking"]] = Field(
-        default_factory=list,
-        description="Categories this commit falls into (can be multiple)"
-    )
-    summary: str = Field(description="Human-readable summary of changes")
-    impact_level: Literal["low", "medium", "high"] = Field(
-        description="Assessed impact level of the changes"
+    # Core categorization
+    change_type: Literal["feature", "bugfix", "refactor", "performance", "security", "documentation", "other"] = Field(
+        description="Primary type of change. Must be exactly one of: feature, bugfix, refactor, performance, security, documentation, or other"
     )
     
-    # Extracted insights
-    key_changes: List[str] = Field(description="List of key changes made")
-    technical_details: List[str] = Field(description="Technical implementation details")
-    affected_components: List[str] = Field(description="Components/modules affected")
+    # Content for blog generation
+    technical_summary: str = Field(
+        description="Technical explanation of what was changed, aimed at developers. Focus on implementation details, code structure, and technical decisions."
+    )
     
-    # Context for blog generation
-    narrative_angle: str = Field(description="Suggested narrative approach for blog post")
+    business_impact: str = Field(
+        description="Explanation of why this change matters to users, stakeholders, or the business. Focus on user value, problem solved, or improvement gained."
+    )
     
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "commit_data": {},  # Would contain CommitData example
-                "commit_types": ["feature", "refactor"],
-                "summary": "Added user authentication with JWT tokens",
-                "impact_level": "high",
-                "key_changes": ["JWT authentication", "User login/logout", "Protected routes"],
-                "technical_details": ["bcrypt password hashing", "JWT token generation", "Middleware protection"],
-                "affected_components": ["auth module", "user routes", "middleware"],
-                "narrative_angle": "Security enhancement for user management",
-            }
-        } 
+    # Structured insights (from original model)
+    key_changes: List[str] = Field(
+        description="List of the main changes made in this commit. Each item should be a concise, specific change (e.g., 'Added JWT authentication middleware', 'Updated user database schema')."
+    )
+    
+    technical_details: List[str] = Field(
+        description="Technical implementation details that developers would find valuable. Include specific technologies, patterns, or approaches used (e.g., 'Used bcrypt for password hashing', 'Implemented OAuth2 flow')."
+    )
+    
+    affected_components: List[str] = Field(
+        description="Components, modules, or areas of the codebase that were affected by this change (e.g., 'authentication module', 'user routes', 'database models')."
+    )
+    
+    # Blog narrative structure
+    narrative_angle: str = Field(
+        description="Suggested narrative structure for the blog post. Explain how to tell this change as a compelling story (e.g., 'Problem-solution approach', 'Before-after comparison', 'Technical deep dive')."
+    )
+    
+    # Context assessment for progressive enhancement
+    context_assessment: Literal["sufficient", "needs_enhancement", "insufficient"] = Field(
+        description="Assessment of context completeness. Must be exactly one of: 'sufficient', 'needs_enhancement', or 'insufficient'"
+    )
+    
+    context_assessment_details: Optional[str] = Field(
+        default=None,
+        description="Detailed explanation of what additional context would improve the analysis. Be specific about what information is missing (e.g., 'Missing component hierarchy for React changes', 'Database schema context needed for model changes'). Only provide if context_assessment is 'needs_enhancement' or 'insufficient'."
+    )
+    
+    def __str__(self) -> str:
+        """String representation for debugging."""
+        return (f"CommitAnalysis(type={self.change_type}, "
+                f"context={self.context_assessment}, "
+                f"changes={len(self.key_changes)})")
+    
+    def needs_enhanced_context(self) -> bool:
+        """Check if this analysis indicates enhanced context would be helpful."""
+        return self.context_assessment in ["needs_enhancement", "insufficient"]
+    
+    def is_sufficient_for_blog_generation(self) -> bool:
+        """Check if analysis has sufficient context for quality blog generation."""
+        return self.context_assessment == "sufficient" 

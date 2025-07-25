@@ -54,6 +54,12 @@ class AgentState:
     max_iterations: int = 3                           # Maximum allowed improvement iterations
     user_satisfied: Optional[bool] = None             # Boolean satisfaction (feedback presence = dissatisfied)
     
+    # ==================== CONTEXT ENHANCEMENT CONTROL ====================
+    # Context assessment and enhancement routing
+    context_assessment: Optional[str] = None          # "sufficient", "needs_enhancement", "insufficient"
+    context_assessment_details: Optional[str] = None  # Detailed explanation of context gaps
+    needs_enhanced_context: bool = False              # Boolean flag for routing to ContextEnhancer
+    
     # ==================== WORKFLOW CONTROL ====================
     # Workflow state and execution tracking
     current_step: str = "input_validation"            # Current workflow step identifier

@@ -10,7 +10,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
-from .nodes import input_validator_node, commit_fetcher_node
+from .nodes import input_validator_node, commit_fetcher_node, commit_analyzer_node
 
 
 
@@ -140,7 +140,7 @@ def create_workflow() -> StateGraph:
     # Add all nodes
     workflow.add_node("input_validator", input_validator_node)
     workflow.add_node("commit_fetcher", commit_fetcher_node)
-    workflow.add_node("commit_analyzer", placeholder_commit_analyzer)
+    workflow.add_node("commit_analyzer", commit_analyzer_node)
     workflow.add_node("content_synthesizer", placeholder_content_synthesizer)
     workflow.add_node("human_review_loop", placeholder_human_review_loop)
     workflow.add_node("publishing_decision", placeholder_publishing_decision)
