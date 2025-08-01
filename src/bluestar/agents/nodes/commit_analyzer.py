@@ -89,10 +89,26 @@ def _extract_prompt_data(state: AgentState) -> Dict[str, Any]:
     # Format files changed as readable list
     files_changed = "\n".join(f"  • {file}" for file in commit_data.files_changed) if commit_data.files_changed else "No files listed"
     
-    # Truncate diff content if too large (token management)
-    diff_content = commit_data.diffs[0].diff_content if commit_data.diffs else "No diff available"
-    if len(diff_content) > 20000:  # Reasonable limit for context
-        diff_content = diff_content[:20000] + "\n... [diff truncated for brevity]"
+    # Combine all diff content from all files (token management)
+    if commit_data.diffs:
+        all_diffs = []
+        total_length = 0
+        for diff in commit_data.diffs:
+            # Add file header for clarity
+            file_header = f"\n--- File: {diff.file_path} ({diff.change_type}) ---\n"
+            diff_section = file_header + diff.diff_content
+            
+            # Check if adding this diff would exceed our token limit
+            if total_length + len(diff_section) > 20000:
+                all_diffs.append("\n... [remaining diffs truncated for brevity]")
+                break
+            
+            all_diffs.append(diff_section)
+            total_length += len(diff_section)
+        
+        diff_content = "\n".join(all_diffs)
+    else:
+        diff_content = "No diff available"
     
     # Extract project context components
     repository_metadata = project_context.get("repository_metadata", {})
