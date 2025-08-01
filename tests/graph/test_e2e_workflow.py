@@ -35,7 +35,7 @@ class TestE2EWorkflow:
         """
         # --- Test Data ---
         repo_identifier = "domini04/bluestar"
-        commit_sha = "87bcf822eb0f22822dd4ff5c8e30825dd558056c"
+        commit_sha = "bcb5db9d771acd0f222a76714a96b6992ba86a16"
         
         # 1. --- Initialization ---
         initial_state = AgentState(
