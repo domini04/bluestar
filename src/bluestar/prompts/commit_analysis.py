@@ -6,8 +6,6 @@ Designed to work with CommitAnalysis Pydantic model for structured output.
 """
 
 from langchain.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
-from ..formats.commit_data import CommitAnalysis
 
 
 def create_commit_analysis_prompt() -> ChatPromptTemplate:

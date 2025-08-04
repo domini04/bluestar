@@ -14,7 +14,7 @@ from ..state import AgentState
 from ...core.llm import llm_client
 from ...core.exceptions import LLMError, ConfigurationError
 from ...prompts import create_commit_analysis_prompt
-from ...formats.commit_data import CommitAnalysis
+from ...formats.commit_data import CommitAnalysis 
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +99,7 @@ def _extract_prompt_data(state: AgentState) -> Dict[str, Any]:
             diff_section = file_header + diff.diff_content
             
             # Check if adding this diff would exceed our token limit
-            if total_length + len(diff_section) > 20000:
+            if total_length + len(diff_section) > 50000:
                 all_diffs.append("\n... [remaining diffs truncated for brevity]")
                 break
             

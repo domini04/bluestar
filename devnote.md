@@ -491,3 +491,45 @@ Input → CommitFetcher(+CoreContext) → Analysis → Generation → Review →
 ---
 
 *Last Updated: August 1, 2025* 
+
+---
+
+### **August 4, 2025 - Content Generation Architecture: Structured Output and Pluggable Renderers**
+
+**Issue**: The `ContentSynthesizer` node's output format was not explicitly defined, leading to inconsistent JSON structures from the LLM that caused parsing errors. The initial fix was to simply conform the Pydantic model to the LLM's arbitrary output, which was a brittle, short-term solution.
+
+**Decision**: Formally adopted a structured, platform-agnostic `BlogPostOutput` data model. This model represents the blog post as a list of typed content blocks (e.g., paragraph, heading, code). This change necessitates that any downstream publishing node must now include a platform-specific "Renderer" to convert this abstract structure into the required final format (e.g., HTML for Ghost).
+
+**Reasoning**:
+- **Reliability & Consistency**: By creating a well-defined Pydantic model and injecting its schema into the prompt, we enforce a strict, consistent output format from the LLM, eliminating parsing errors.
+- **Decoupling & Extensibility**: This architecture cleanly separates content generation from publishing. The `ContentSynthesizer` focuses only on generating high-quality structured content. Adding support for new platforms (like Notion or Medium) now only requires creating a new renderer, without touching the core generation logic.
+- **Improved Data Model**: The LLM's initially "incorrect" output revealed the benefits of a structured block-based format over a single flat string, which we have now formally adopted.
+
+**Impact**:
+- The `ContentSynthesizer` now produces a `BlogPostOutput` object.
+- A new task has been added to the development plan to create a "Ghost Renderer" within the `BlogPublisher` node.
+- The system is now architecturally prepared for multi-platform support in a clean, scalable way.
+
+---
+
+### **August 4, 2025 - Content Quality Improvement via Prompt Engineering**
+
+**Issue**: The initial output from the `ContentSynthesizer` node, while structurally correct, exhibited a "marketing-like" tone and lacked the technical depth required for a developer audience, specifically failing to include code examples.
+
+**Decision**: Refined the system prompt in `src/bluestar/prompts/initial_generation.py` to provide more explicit instructions on writing style and content requirements.
+
+**Implementation**:
+- **Updated System Prompt**: Added a new "WRITING STYLE" section with three key directives:
+  1.  **Engineer-to-Engineer Tone**: Explicitly instructed the LLM to adopt a direct, objective, and neutral tone while avoiding persuasive or exaggerated language.
+  2.  **Mandatory Code Snippets**: Commanded the model to include small, illustrative code snippets or pseudocode when explaining technical concepts, using the `code` block type.
+  3.  **Authenticity and Specificity**: Encouraged the model to ground the narrative by quoting or referencing specific details from the input context.
+
+**Testing Results**:
+- **✅ Improved Tone**: The refined prompt successfully eliminated the "marketing-like" language, resulting in a more professional and objective blog post.
+- **✅ Increased Technical Depth**: The new output now includes relevant code snippets, making the technical explanations more concrete and valuable as instructed.
+- **✅ Enhanced Authenticity**: The content feels more credible by incorporating specific details from the analysis, such as quoting technical notes.
+
+**Impact**:
+- Validated that targeted prompt engineering is a highly effective method for controlling the quality, tone, and technical depth of the LLM's output.
+- The `ContentSynthesizer` now produces content that is significantly closer to a publishable standard, reducing the need for extensive human editing.
+- Established a best practice for future prompt development: be explicit, provide examples of desired behavior, and clearly define what to avoid.

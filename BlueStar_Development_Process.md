@@ -172,7 +172,7 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 - [ ] **Repository metadata, README, and config file context** successfully integrated
 - [ ] **Project type and framework detection** working accurately
 - [x] LLM-powered commit analysis produces structured insights **with context completeness scoring**
-- [ ] Blog content generation incorporates user instructions **and core project context**
+- [x] Blog content generation incorporates user instructions **and core project context**
 - [ ] Human review loop enables iterative improvement **with context enhancement routing**
 - [ ] **ContextEnhancer node** intelligently fetches additional context when needed
 - [ ] **Content regeneration** with enhanced context improves blog quality
@@ -299,6 +299,7 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 #### **1. BlogPublisher Tool (MCP Style)**
 ```python
 # Blog platform integration
+- **NEW**: Implement a 'Renderer' to convert the structured `BlogPostOutput` into the HTML format required by the Ghost CMS API.
 - API authentication and error handling
 - Post creation and publishing
 - Draft/preview functionality
@@ -558,11 +559,12 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 
 ## Next Immediate Actions
 
-### 🚀 **Priority 1: Phase 1 Enhanced Implementation**
+### 🚀 **Priority 1: Complete Core Workflow**
 1. ✅ **Enhanced CommitFetcher**: GitHub API data extraction **with core context integration** - COMPLETE
-2. **Context-aware ContentSynthesizer**: LLM blog generation **with project context** - NEXT
-3. ✅ **Enhanced LangGraph Integration**: Workflow execution **with context completeness tracking** - COMPLETE
-4. **First Enhanced Output**: Validate core concept **with repository context** using hosted repositories - IN PROGRESS
+2. ✅ **Context-aware ContentSynthesizer**: LLM blog generation **with project context** - COMPLETE
+3. **BlogPublisher Node**: Implement renderer and publishing logic to Ghost CMS - NEXT
+4. **End-to-End Validation**: Validate the full `commit -> draft` workflow - IN PROGRESS
+
 
 ### 🚀 **Priority 2: Phase 1.5 Context Enhancement**
 1. **ContextEnhancer Node**: LLM-powered additional context assessment and fetching
@@ -578,12 +580,16 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 - ✅ GitHub API integration for repository metadata - COMPLETE
 - ✅ CommitAnalyzer quality evaluation and optimization - COMPLETE
 
-# Week 2: Enhanced Generation  
-- ContentSynthesizer with project context integration
-- Enhanced workflow with core context
-- Context completeness evaluation and testing
+# Week 2: Content Generation ✅ COMPLETE
+- ✅ **ContentSynthesizer with project context integration** - COMPLETE
+- ✅ **Enhanced workflow with core context** - COMPLETE
+- ✅ **Content quality evaluation and prompt refinement** - COMPLETE
 
-# Week 3: Progressive Enhancement
+# Week 3: Publishing & End-to-End Validation
+- **BlogPublisher node implementation with renderer**
+- End-to-end testing of the full `commit -> draft` workflow
+- API error handling for publishing
+
 - ContextEnhancer node implementation
 - Enhanced HumanReviewLoop with routing logic
 - LLM-powered context assessment prompting

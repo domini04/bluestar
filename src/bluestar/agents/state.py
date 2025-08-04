@@ -10,8 +10,10 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from ..formats.commit_data import CommitData
+from ..formats.commit_data import CommitAnalysis, CommitData
 from ..formats.blog_formats import GhostBlogPost
+from ..formats.llm_outputs import BlogPostOutput
+
 
 # TODO: Import when implemented
 # from ..models.commit_analysis import CommitAnalysis
@@ -46,15 +48,18 @@ class AgentState:
     # ==================== PROCESSING DATA ====================
     # Core workflow data transformation chain
     commit_data: Optional[CommitData] = None          # Structured commit info from GitHub API
-    commit_analysis: Optional["CommitAnalysis"] = None  # LLM analysis with categorization/insights
-    blog_post: Optional[GhostBlogPost] = None         # Generated blog post in Ghost CMS format
+    commit_analysis: Optional[CommitAnalysis] = None          # LLM analysis with categorization/insights
+    blog_post: Optional[BlogPostOutput] = None         # Generated blog post in a structured, platform-agnostic format
+    
     
     # ==================== HUMAN-IN-THE-LOOP CONTROL ====================
     # User interaction and satisfaction management
     max_iterations: int = 3                           # Maximum allowed improvement iterations
+    synthesis_iteration_count: int = 0                # Number of iterations of the ContentSynthesizer
     user_satisfied: Optional[bool] = None             # Boolean satisfaction (feedback presence = dissatisfied)
+    user_feedback: Optional[str] = None               # User feedback on the generated blog post  
     
-    # ==================== CONTEXT ENHANCEMENT CONTROL ====================
+    # ==================== CONTEXT & Context ENHANCEMENT CONTROL ====================
     # Context assessment and enhancement routing
     context_assessment: Optional[str] = None          # "sufficient", "needs_enhancement", "insufficient"
     context_assessment_details: Optional[str] = None  # Detailed explanation of context gaps

@@ -10,7 +10,12 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
-from .nodes import input_validator_node, commit_fetcher_node, commit_analyzer_node
+from .nodes import (
+    input_validator_node, 
+    commit_fetcher_node, 
+    commit_analyzer_node,
+    content_synthesizer_node
+)
 
 
 
@@ -37,7 +42,7 @@ def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer
     return "publishing_decision"
 
 
-def should_publish_blog(state: AgentState) -> Literal["blog_publisher", END]:
+def should_publish_blog(state: AgentState) -> str:
     """
     Determine if blog should be published or workflow should end.
     
@@ -62,18 +67,6 @@ def placeholder_commit_analyzer(state: AgentState) -> AgentState:
     """
     print(f"🔄 CommitAnalyzer: Analyzing commit data")
     state.mark_step_complete("commit_analysis")
-    return state
-
-
-def placeholder_content_synthesizer(state: AgentState) -> AgentState:
-    """
-    Placeholder for ContentSynthesizer node.
-    
-    TODO: Implement LLM-powered blog post generation.
-    """
-    iteration = state.get_current_iteration_count() + 1
-    print(f"🔄 ContentSynthesizer: Generating blog post (iteration {iteration})")
-    state.mark_step_complete(f"content_synthesis_{iteration}")
     return state
 
 
@@ -141,7 +134,7 @@ def create_workflow() -> StateGraph:
     workflow.add_node("input_validator", input_validator_node)
     workflow.add_node("commit_fetcher", commit_fetcher_node)
     workflow.add_node("commit_analyzer", commit_analyzer_node)
-    workflow.add_node("content_synthesizer", placeholder_content_synthesizer)
+    workflow.add_node("content_synthesizer", content_synthesizer_node)
     workflow.add_node("human_review_loop", placeholder_human_review_loop)
     workflow.add_node("publishing_decision", placeholder_publishing_decision)
     workflow.add_node("blog_publisher", placeholder_blog_publisher)
