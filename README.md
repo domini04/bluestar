@@ -2,7 +2,7 @@
 
 **AI-Powered Developer Blog Generation Agent**
 
-BlueStar is an AI agent designed to automatically generate and publish developer blog posts by analyzing user-selected Git commits. The agent uses LangGraph for orchestration, Self-RAG for content refinement, and MCP for tool integration.
+BlueStar is an AI agent designed to automatically generate and publish developer blog posts by analyzing user-selected Git commits. The agent uses LangGraph for workflow orchestration and is designed to run locally as a powerful command-line tool.
 
 ## Overview
 
@@ -18,7 +18,6 @@ BlueStar analyzes Git commits to understand development progress and context, th
 - 🔬 **Quality Assurance**: Systematic evaluation framework with LangSmith tracing
 - 📝 **Blog Generation**: Creates structured, narrative blog posts *(In Development)*
 - 🔄 **Self-RAG**: Self-reflection and refinement for quality improvement *(Planned)*
-- 🛠️ **MCP Integration**: Model Context Protocol for tool orchestration *(Planned)*
 - 👤 **Human-in-the-Loop**: Interactive context gathering and review *(In Development)*
 
 ## Development Status
@@ -48,13 +47,13 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - 🔄 Complete end-to-end workflow orchestration
 - **Phase 2**: Analysis Enhancement & Multi-commit support
 - **Phase 3**: Publishing Integration & Human-in-the-Loop
-- **Phase 4**: Advanced Features & MCP Packaging
+- **Phase 4**: Advanced Features & Final Packaging
 
 ## Technology Stack
 
 - **Core**: Python 3.13+, LangGraph, LangChain
 - **AI**: OpenAI/Anthropic APIs, Self-RAG patterns
-- **Integration**: MCP protocol, GitHub API (primary), Git CLI (fallback)
+- **Integration**: GitHub API (primary), Git CLI (fallback)
 - **Testing**: pytest with comprehensive unit + integration tests, LangSmith tracing
 - **Quality**: Evaluation framework for LLM output assessment
 - **Package Management**: uv

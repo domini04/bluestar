@@ -296,7 +296,7 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 
 ### 📋 **Tasks**
 
-#### **1. BlogPublisher Tool (MCP Style)**
+#### **1. BlogPublisher Tool**
 ```python
 # Blog platform integration
 - **NEW**: Implement a 'Renderer' to convert the structured `BlogPostOutput` into the HTML format required by the Ghost CMS API.
@@ -311,8 +311,7 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 ```python
 # Multi-interface input handling
 - CLI: Text parsing ("repo sha | instructions") → structured AgentState
-- MCP: JSON input → structured AgentState directly
-- Web: Form/API data → structured AgentState
+- Web UI (Future): Form/API data → structured AgentState
 - Repository validation and normalization in Input Validator
 - Commit SHA validation and format checking
 - Interface-specific parsing with shared validation logic
@@ -390,19 +389,18 @@ Choose one to implement:
 - IDE context integration
 - Seamless workflow integration
 
-#### **4. MCP Tool Packaging**
+#### **4. Final Packaging**
 ```python
-# Agent as a service
-- Define BlueStar API schema
-- MCP tool wrapper implementation
-- Documentation and examples
-- Tool discovery and registration
+# Prepare application for distribution
+- Create installation scripts and clear setup instructions.
+- Package as an installable CLI application.
+- Finalize documentation and create examples.
 ```
 
 ### ✅ **Success Criteria**
 - [ ] Production-ready reliability
 - [ ] Advanced feature functional
-- [ ] MCP integration complete
+- [ ] Application is packaged and distributable
 - [ ] Documentation comprehensive
 
 ---
@@ -504,7 +502,7 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 ### 🛠️ **Tools & Technologies**
 - **Core**: Python 3.13+, LangGraph, LangChain
 - **AI**: OpenAI/Anthropic APIs, Self-RAG patterns
-- **Integration**: MCP protocol, Git APIs
+- **Integration**: GitHub API (primary), Git CLI (fallback)
 - **Testing**: pytest, mock data, integration tests
 - **Quality**: Black, flake8, mypy, pre-commit hooks
 

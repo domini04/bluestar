@@ -7,7 +7,7 @@
 
 ## Overview
 
-BlueStar uses LangGraph to orchestrate an AI-powered workflow that transforms Git commits into high-quality developer blog posts. The architecture emphasizes user control, iterative improvement, and flexible publishing options.
+BlueStar uses LangGraph to orchestrate an AI-powered workflow that transforms Git commits into high-quality developer blog posts. It is designed as a standalone local application to provide a rich, interactive experience. The architecture emphasizes user control, iterative improvement, and flexible publishing options.
 
 **Core Workflow**: 
 ```
@@ -174,7 +174,7 @@ graph TD
 1. **Raw vs Parsed Storage**: Should we store both original and processed input for debugging?  
    **Decision**: **Store structured data only - no raw input storage**
    - AgentState accepts structured data directly (`repo_identifier`, `commit_sha`, `user_instructions`)
-   - Interface layers (CLI, MCP, Web) handle their own parsing before creating AgentState
+   - Interface layers (CLI, Web UI) handle their own parsing before creating AgentState
    - **Benefits**: Clean separation of concerns + optimal data format for each interface type
 
 2. **Validation History Granularity**: How detailed should validation step tracking be?  
@@ -315,23 +315,22 @@ graph TD
 36. **Error Propagation**: How should errors flow between components?
 
 #### Interface Design ✅ **RESOLVED**
-37. **Input Format Strategy**: How should different interfaces (CLI, MCP, Web) provide input data?  
+37. **Input Format Strategy**: How should different interfaces (CLI, Web UI) provide input data?  
     **Decision**: **Interface-specific parsing with structured AgentState creation**
     - CLI: Parses text input ("repo sha | instructions") → structured AgentState
-    - MCP: Accepts JSON directly → structured AgentState  
-    - Web: Form/API data → structured AgentState
+    - Web UI (Future): Form/API data → structured AgentState
     - **Benefits**: Natural data formats for each interface + no forced string conversion
 
 38. **State Initialization**: Should AgentState accept raw strings or structured data?  
     **Decision**: **Structured data only in AgentState constructor**
     - AgentState(repo_identifier, commit_sha, user_instructions) - no raw_input field
     - Input Validator validates structured data instead of parsing strings
-    - **Benefits**: Type safety + cleaner architecture + optimal for JSON interfaces
+    - **Benefits**: Type safety + cleaner architecture + optimal for future UI or API interfaces
 
 #### Future Extensibility
 39. **Multi-Commit Support**: How should the architecture scale to multiple commits?
 40. **Platform Integration**: How should multiple blog platforms be supported?
-41. **MCP Packaging**: What modifications are needed for MCP distribution?
+41. **Packaging**: What modifications are needed for distribution as a standalone CLI tool?
 
 
 ---
@@ -366,4 +365,4 @@ graph TD
 
 ---
 
-*This architecture serves as the foundation for BlueStar's LangGraph implementation, emphasizing user control, quality iteration, and flexible publishing workflows.* 
+*This architecture serves as the foundation for BlueStar's LangGraph implementation, emphasizing user control, quality iteration, and flexible publishing workflows.*

@@ -533,3 +533,44 @@ Input → CommitFetcher(+CoreContext) → Analysis → Generation → Review →
 - Validated that targeted prompt engineering is a highly effective method for controlling the quality, tone, and technical depth of the LLM's output.
 - The `ContentSynthesizer` now produces content that is significantly closer to a publishable standard, reducing the need for extensive human editing.
 - Established a best practice for future prompt development: be explicit, provide examples of desired behavior, and clearly define what to avoid.
+
+---
+
+### **August 5, 2025 - Strategic Pivot: From MCP Server to Standalone Application**
+
+**Issue**: The original vision for BlueStar was a remote MCP server that other agents could call. However, as features like Human-in-the-Loop, iterative content refinement, and secure API key management were designed, it became clear that the stateless, transactional nature of an MCP tool was a poor fit.
+
+**Decision**: Formally pivoted BlueStar's architecture from an MCP server to a standalone, local-first application (e.g., a CLI tool or local web UI).
+
+**Reasoning**:
+- **Security**: A local application allows users to manage their own API keys securely in a `.env` file, which is the industry standard. A remote MCP server would create significant security challenges related to storing or transmitting user secrets.
+- **Human-in-the-Loop (HITL)**: Interactive features like our planned review and refinement cycles are simple to implement in a local application but would require a complex, stateful, and asynchronous architecture (e.g., session management, databases, webhooks) to function as a remote service.
+- **State Management**: LangGraph's state and checkpointing features work naturally within a single application run but would require a persistent database backend to function in a stateless multi-user server environment.
+- **User Experience**: Features like saving drafts to a local `output/` directory are straightforward for a local app but impossible for a remote server. The overall experience is simpler and more powerful when run locally.
+
+**Impact**:
+- **Clarity of Focus**: Development is now focused on creating a high-quality, interactive local tool for developers.
+- **Architectural Simplification**: We avoid the immense complexity of building a secure, stateful, multi-tenant web service.
+- **Documentation Update**: All project documents have been updated to remove references to MCP and reflect the new standalone application model. The goal is now to create a distributable package, not a web service.
+
+---
+
+### **August 5, 2025 - Implemented Ghost HTML Renderer**
+
+**Issue**: To publish content to Ghost CMS, the platform-agnostic `BlogPostOutput` object needed to be converted into the specific HTML format required by the Ghost Admin API.
+
+**Decision**: Implemented a dedicated `GhostHtmlRenderer` utility to handle this platform-specific translation, enforcing a clean separation of concerns between content generation and publishing.
+
+**Implementation**:
+- **Created**: `src/bluestar/utils/ghost_renderer.py` to house the new component.
+- **`GhostHtmlRenderer` Class**:
+  - A `render` method serves as the primary entry point, taking a `BlogPostOutput` and returning a fully-formed `GhostBlogPost` object.
+  - Private helper methods (`_render_paragraph`, `_render_code_block`, etc.) map each structured content block to its corresponding HTML tag.
+  - Correctly handles HTML escaping for code content to ensure security and proper rendering.
+  - Maps metadata (title, summary, tags, author) from the `BlogPostOutput` to the appropriate fields in the `GhostBlogPost` model.
+- **Updated `utils/__init__.py`**: Exported the `GhostHtmlRenderer` to make it easily accessible to other parts of the application, specifically the planned `BlogPublisher` node.
+
+**Impact**:
+- This component provides the crucial link between our structured, AI-generated content and the format required for our first publishing target.
+- It validates our architectural decision to use a renderer, proving that the platform-agnostic model can be cleanly translated for a specific endpoint.
+- The `BlogPublisher` node can now be implemented with a clear dependency: it will use this renderer to prepare its payload without needing to contain any complex formatting logic itself.

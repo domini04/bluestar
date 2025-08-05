@@ -28,7 +28,7 @@ def analyzed_state_fixture() -> AgentState:
 
     # --- Test Data ---
     repo_identifier = "domini04/bluestar"
-    commit_sha = "87bcf822eb0f22822dd4ff5c8e30825dd558056c"
+    commit_sha = "3a08718cfd5c22a392cd642843a3b5428fc8363d"
     
     # --- Run upstream nodes ---
     initial_state = AgentState(repo_identifier=repo_identifier, commit_sha=commit_sha)
