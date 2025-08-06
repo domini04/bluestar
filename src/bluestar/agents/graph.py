@@ -14,7 +14,9 @@ from .nodes import (
     input_validator_node, 
     commit_fetcher_node, 
     commit_analyzer_node,
-    content_synthesizer_node
+    content_synthesizer_node,
+    human_refinement_node,
+    publishing_decision_node
 )
 
 
@@ -30,80 +32,46 @@ def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer
     Returns:
         Next node to execute based on user satisfaction and iteration limits
     """
-    # If user is satisfied, move to publishing decision
-    if state.user_satisfied is True:
+    # First, check if we've hit the maximum number of iterations
+    if state.synthesis_iteration_count >= state.max_iterations:
+        print(f"⚠️ Max iterations ({state.max_iterations}) reached. Moving to publishing decision.")
+        return "publishing_decision"
+
+    # If user is satisfied, move to the next step
+    if state.user_satisfied:
         return "publishing_decision"
     
-    # If user is not satisfied but can still iterate, continue synthesis
-    if state.user_satisfied is False and state.can_iterate(): #TODO: Should we define a separate node for
-        return "content_synthesizer"
-    
-    # If max iterations reached, move to publishing decision
-    return "publishing_decision"
+    # Otherwise, loop back for another refinement iteration
+    return "content_synthesizer"
 
 
-def should_publish_blog(state: AgentState) -> str:
+def route_after_publishing_decision(state: AgentState) -> Literal["publish_to_ghost", "save_local_draft", "end"]:
     """
-    Determine if blog should be published or workflow should end.
-    
-    Args:
-        state: Current workflow state
-        
-    Returns:
-        Next node to execute based on user publishing choice
+    Determines the next step based on the user's publishing decision.
     """
-    if state.publish_to_blog is True:
-        return "blog_publisher"
-    else:
-        return END
+    decision = state.publishing_decision
+    if decision == "ghost":
+        return "publish_to_ghost"
+    elif decision == "local":
+        return "save_local_draft"
+    else:  # This covers "discard" or any other case
+        return "end"
 
-# ============================ NODES ============================
 
-def placeholder_commit_analyzer(state: AgentState) -> AgentState:
-    """
-    Placeholder for CommitAnalyzer node.
-    
-    TODO: Implement LLM-powered commit analysis.
-    """
-    print(f"🔄 CommitAnalyzer: Analyzing commit data")
-    state.mark_step_complete("commit_analysis")
+# ============================ NODES (Placeholders) ============================
+
+def placeholder_publish_to_ghost(state: AgentState) -> AgentState:
+    """Placeholder for the PublishToGhostNode."""
+    print("✅ Blog post would be published to Ghost here.")
+    state.mark_step_complete("publish_to_ghost")
+    state.processing_complete = True
     return state
 
 
-def placeholder_human_review_loop(state: AgentState) -> AgentState:
-    """
-    Placeholder for HumanReviewLoop node.
-    
-    TODO: Implement human feedback collection and satisfaction tracking.
-    """
-    print(f"🔄 HumanReviewLoop: Collecting user feedback")
-    # For now, simulate user satisfaction (will be replaced with actual user interaction)
-    state.user_satisfied = True  # Placeholder - actual implementation will collect real feedback
-    state.mark_step_complete("human_review")
-    return state
-
-
-def placeholder_publishing_decision(state: AgentState) -> AgentState:
-    """
-    Placeholder for PublishingDecision node.
-    
-    TODO: Implement user choice collection for blog publishing.
-    """
-    print(f"🔄 PublishingDecision: Collecting publishing choice")
-    # For now, simulate no publishing (will be replaced with actual user choice)
-    state.publish_to_blog = False  # Placeholder - actual implementation will collect real choice
-    state.mark_step_complete("publishing_decision")
-    return state
-
-
-def placeholder_blog_publisher(state: AgentState) -> AgentState:
-    """
-    Placeholder for BlogPublisher node.
-    
-    TODO: Implement Ghost CMS blog publishing.
-    """
-    print(f"🔄 BlogPublisher: Publishing blog post")
-    state.mark_step_complete("blog_publishing")
+def placeholder_save_local_draft(state: AgentState) -> AgentState:
+    """Placeholder for the SaveLocalDraftNode."""
+    print("✅ Blog post draft would be saved locally here.")
+    state.mark_step_complete("save_local_draft")
     state.processing_complete = True
     return state
 
@@ -111,66 +79,53 @@ def placeholder_blog_publisher(state: AgentState) -> AgentState:
 def create_workflow() -> StateGraph:
     """
     Create and configure the BlueStar workflow graph.
-    
-    Workflow Flow:
-    1. InputValidator: Validate structured input data
-    2. CommitFetcher: Retrieve commit data from GitHub API
-    3. CommitAnalyzer: Analyze commit with LLM for insights
-    4. ContentSynthesizer: Generate blog post content
-    5. HumanReviewLoop: Collect user feedback and satisfaction
-    6. [Conditional] If not satisfied and can iterate: → ContentSynthesizer
-    7. [Conditional] If satisfied or max iterations: → PublishingDecision
-    8. PublishingDecision: Collect user choice for publishing
-    9. [Conditional] If publish: → BlogPublisher
-    10. [Conditional] If no publish: → END
-    
-    Returns:
-        Configured StateGraph ready for execution
     """
-    # Create workflow with AgentState
     workflow = StateGraph(AgentState)
-    
+
     # Add all nodes
     workflow.add_node("input_validator", input_validator_node)
     workflow.add_node("commit_fetcher", commit_fetcher_node)
     workflow.add_node("commit_analyzer", commit_analyzer_node)
     workflow.add_node("content_synthesizer", content_synthesizer_node)
-    workflow.add_node("human_review_loop", placeholder_human_review_loop)
-    workflow.add_node("publishing_decision", placeholder_publishing_decision)
-    workflow.add_node("blog_publisher", placeholder_blog_publisher)
-    
+    workflow.add_node("human_refinement_node", human_refinement_node)
+    workflow.add_node("publishing_decision", publishing_decision_node)
+    workflow.add_node("publish_to_ghost", placeholder_publish_to_ghost)
+    workflow.add_node("save_local_draft", placeholder_save_local_draft)
+
     # Define workflow edges
     workflow.add_edge("input_validator", "commit_fetcher")
     workflow.add_edge("commit_fetcher", "commit_analyzer")
     workflow.add_edge("commit_analyzer", "content_synthesizer")
-    workflow.add_edge("content_synthesizer", "human_review_loop")
-    
+    workflow.add_edge("content_synthesizer", "human_refinement_node")
+
     # Conditional edge: iteration control
     workflow.add_conditional_edges(
-        "human_review_loop",
+        "human_refinement_node",
         should_continue_iteration,
         {
-            "content_synthesizer": "content_synthesizer",  # Continue iterating
-            "publishing_decision": "publishing_decision"   # Move to publishing
+            "content_synthesizer": "content_synthesizer",
+            "publishing_decision": "publishing_decision"
         }
     )
-    
+
     # Conditional edge: publishing decision
     workflow.add_conditional_edges(
         "publishing_decision",
-        should_publish_blog,
+        route_after_publishing_decision,
         {
-            "blog_publisher": "blog_publisher",  # Publish blog
-            END: END                             # End workflow
+            "publish_to_ghost": "publish_to_ghost",
+            "save_local_draft": "save_local_draft",
+            "end": END
         }
     )
-    
-    # End workflow after publishing
-    workflow.add_edge("blog_publisher", END)
-    
+
+    # End workflow after publishing or saving
+    workflow.add_edge("publish_to_ghost", END)
+    workflow.add_edge("save_local_draft", END)
+
     # Set entry point
     workflow.set_entry_point("input_validator")
-    
+
     return workflow
 
 

@@ -296,49 +296,35 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 
 ### 📋 **Tasks**
 
-#### **1. BlogPublisher Tool**
+#### **1. Blog Publishing & Saving Nodes**
 ```python
-# Blog platform integration
-- **NEW**: Implement a 'Renderer' to convert the structured `BlogPostOutput` into the HTML format required by the Ghost CMS API.
-- API authentication and error handling
-- Post creation and publishing
-- Draft/preview functionality
-- Multiple platform support (Ghost, WordPress)
-- Rate limiting and retry logic
+# Final disposition nodes
+- **PublishToGhostNode**: A non-interactive node to publish the final draft to Ghost CMS. Uses the GhostHtmlRenderer.
+- **SaveLocalDraftNode**: A non-interactive node to save the final draft to the `output/` directory.
 ```
 
-#### **2. User Input System**
+#### **2. Two-Stage Human-in-the-Loop**
 ```python
-# Multi-interface input handling
-- CLI: Text parsing ("repo sha | instructions") → structured AgentState
-- Web UI (Future): Form/API data → structured AgentState
-- Repository validation and normalization in Input Validator
-- Commit SHA validation and format checking
-- Interface-specific parsing with shared validation logic
+# Interactive refinement and decision-making
+- **HumanRefinementNode**: Presents the draft and asks the user for content feedback. Loops back to the ContentSynthesizer if feedback is given.
+- **PublishingDecisionNode**: After content is approved, asks the user whether to publish, save locally, or discard. Routes the workflow accordingly.
 ```
 
-#### **3. Human-in-the-Loop (ContextAssessorPrompter)**
+#### **3. Updated Agent Graph**
 ```python
-# Interactive context gathering
-- Necessity assessment (heuristics → LLM reasoning)
-- Question generation for missing context
-- LangGraph pause/resume mechanism
-- User response integration
-- CLI interaction (input() or better interface)
-```
-
-#### **4. Enhanced Agent Graph**
-```python
-# Complete workflow with branches
-Start → CommitFetcher → CommitAnalyzer → OutlineGenerator → 
-[Branch: ContextAssessor] → [Optional: HumanInput] → 
-ContentSynthesizer → BlogPublisher → End
+# Complete workflow with dual HIL points
+Start → ... → ContentSynthesizer → [HIL 1] HumanRefinementNode →
+[Branch: Refine Content?] → (back to ContentSynthesizer) →
+[Branch: Content Approved] → [HIL 2] PublishingDecisionNode →
+[Branch: Publish] → PublishToGhostNode → End
+[Branch: Save] → SaveLocalDraftNode → End
+[Branch: Discard] → End
 ```
 
 ### ✅ **Success Criteria**
 - [ ] Successful blog post publishing
 - [ ] User can select target commits easily
-- [ ] Human-in-the-loop works smoothly
+- [x] Human-in-the-loop works smoothly
 - [ ] Context assessment accuracy > 80%
 - [ ] Complete workflow runs reliably
 
@@ -395,6 +381,7 @@ Choose one to implement:
 - Create installation scripts and clear setup instructions.
 - Package as an installable CLI application.
 - Finalize documentation and create examples.
+- **NEW**: Create a `BLUESTAR_USAGE.md` guide for AI agents (like Cursor) to enable autonomous tool use. This guide should detail the tool's purpose, command-line syntax, and when to use it.
 ```
 
 ### ✅ **Success Criteria**

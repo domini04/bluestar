@@ -21,3 +21,8 @@ dependencies = [
     "pytest-parametrize>=1.4.0",
     "langsmith>=0.3.45",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]

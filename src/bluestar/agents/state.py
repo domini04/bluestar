@@ -7,7 +7,7 @@ from input collection to final publishing decision.
 """
 
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
 from ..formats.commit_data import CommitAnalysis, CommitData
@@ -73,7 +73,9 @@ class AgentState:
     
     # ==================== PUBLISHING CONTROL ====================
     # Blog publishing decision and results
-    publish_to_blog: Optional[bool] = None            # User choice for publishing vs draft-only
+    publishing_decision: Optional[Literal["ghost", "local", "discard"]] = None # User's final choice
+    local_draft_path: Optional[str] = None              # Filesystem path to the saved local draft
+    published_url: Optional[str] = None                 # URL of the published post in Ghost
     publication_result: Optional[Dict[str, Any]] = None  # Publishing operation results/metadata
     
     # ==================== METADATA ====================

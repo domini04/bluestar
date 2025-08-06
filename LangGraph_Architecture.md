@@ -21,31 +21,18 @@ Human Review Loop → Publishing Decision → Optional Blog Publishing
 
 ```mermaid
 graph TD
-    A[Start] --> B[Input Validation]
-    B --> C{Valid Input?}
-    C -->|No| D[Request Correction]
-    D --> B
-    C -->|Yes| E[CommitFetcher + Core Context]
-    E --> F{Fetch Success?}
-    F -->|No| G[Error End]
-    F -->|Yes| H[CommitAnalyzer]
-    H --> I[ContentSynthesizer]
-    I --> J[Show Draft to User]
-    J --> K[Human Review Loop]
-    K --> L{User Satisfied?}
-    L -->|No + Instructions| M{Need Enhanced Context?}
-    M -->|Yes| N[ContextEnhancer]
-    N --> I
-    M -->|No| O[Improve with Same Context]
-    O --> P{Max Iterations?}
-    P -->|No| I
-    P -->|Yes| Q[Final Draft]
-    L -->|Yes| Q
-    Q --> R{Publish to Blog?}
-    R -->|Yes| S[BlogPublisher]
-    R -->|No| T[Save Draft Only]
-    S --> U[Success End]
-    T --> U
+    A[Start] --> B(InputValidator);
+    B --> C(CommitFetcher);
+    C --> D(CommitAnalyzer);
+    D --> E(ContentSynthesizer);
+    E --> F{Human Refinement HIL};
+    F -- "User provides feedback" --> E;
+    F -- "User is satisfied" --> G{Publishing Decision HIL};
+    G -- "Publish to Ghost" --> H(PublishToGhostNode);
+    G -- "Save Locally" --> I(SaveLocalDraftNode);
+    G -- "Discard" --> Z(End);
+    H --> Z;
+    I --> Z;
 ```
 
 ---
@@ -82,51 +69,31 @@ graph TD
 - Produces a high-quality `BlogPostOutput` object with typed content blocks (paragraphs, code, etc.).
 **Status**: ✅ Full implementation with comprehensive testing and iterative prompt refinement.
 
-### 5. HumanReviewLoop Node ⭐ **ENHANCED**
-**Purpose**: Manage iterative improvement with intelligent context enhancement routing  
-**Components**: 
-- Draft display and satisfaction collection
-- **NEW**: Context enhancement decision logic
-- **NEW**: Routing to ContextEnhancer vs direct content improvement
-**Output**: User satisfaction status, improvement instructions, and enhancement routing decision
+### 5. HumanRefinementNode ⭐ **NEW**
+**Purpose**: The first HIL point. Presents the draft to the user and asks for refinement feedback.
+**Responsibility**:
+- Display the generated blog post draft.
+- Prompt user for feedback on content.
+- Update `state.refinement_feedback` based on user input. `None` if satisfied, `str` if changes are requested.
 
-### 6. ContextEnhancer Node ⭐ **NEW**
-**Purpose**: Intelligently fetch additional context based on user feedback and quality gaps  
+### 6. PublishingDecisionNode ⭐ **NEW**
+**Purpose**: The second HIL point. Asks the user for the final disposition of the approved content.
+**Responsibility**:
+- After content is approved, prompt user with choices: [Publish to Ghost], [Save Locally], [Discard].
+- Update `state.publishing_decision` with the user's choice.
+
+### 7. PublishToGhostNode (formerly BlogPublisher)
+**Purpose**: A non-interactive node that publishes the final content to Ghost CMS.
 **Components**:
-- LLM-powered context need assessment
-- Selective GitHub API data fetching (PR context, recent commits, directory structure)
-- Context relevance filtering and token optimization
-**Input**: Current blog post, user feedback, commit data, core context
-**Output**: Enhanced context data integrated into CommitData.project_structure
-**Token Cost**: ~500-2,000 tokens for enhanced context
-**Triggers**: User dissatisfaction + LLM assessment of context value
+- Uses the `GhostHtmlRenderer` to convert `BlogPostOutput` to Ghost-compatible HTML.
+- Handles all API interaction with the Ghost Admin API.
+**Output**: Saves the final published URL to `state.published_url`.
 
-### 7. PublishingDecision Node
-**Purpose**: Handle publishing choice and draft saving  
-**Components**: User choice collection, local draft saving  
-**Output**: Publishing decision and draft preservation
-
-### 8. BlogPublisher Tool *(Phase 2)*
-**Purpose**: Publish to Ghost CMS platform  
-**Components**: 
-- **NEW**: Renderer to convert structured `BlogPostOutput` to platform-specific format (e.g., HTML for Ghost).
-- Ghost API integration, publishing workflow  
-**Output**: Publishing result and metadata
-
----
-
-## LangSmith Observability Infrastructure ✅ **COMPLETE**
-
-### LangSmith Tracing Setup (`src/bluestar/core/tracing.py`)
-**Purpose**: Production observability and debugging for LLM interactions  
-**Components**:
-- **Global Configuration**: Environment-based setup following LangSmith documentation
-- **Multi-LLM Support**: Works with Claude/Gemini (not just OpenAI) via LANGSMITH_API_KEY  
-- **Automatic Integration**: LangChain's built-in tracing without custom wrapper complexity
-- **Project Management**: Configurable project names (bluestar-default, bluestar-integration-tests)
-- **Auto-initialization**: Automatic setup for main application with pytest detection
-
-**Status**: ✅ Complete with verified tracing in production CommitAnalyzer node and integration tests
+### 8. SaveLocalDraftNode ⭐ **NEW**
+**Purpose**: A non-interactive node that saves the final content locally.
+**Responsibility**:
+- Saves the rendered HTML to the local `output/` directory.
+- Updates `state.local_draft_path`.
 
 ---
 
@@ -141,28 +108,23 @@ graph TD
 - **commit_data**: Structured commit information from GitHub API **with core context**
 - **commit_analysis**: LLM analysis results with categorization, insights, **and context completeness scoring**
 - **blog_post**: Generated blog post as a structured, platform-agnostic `BlogPostOutput` object.
-- **enhanced_context**: ⭐ **NEW** Additional context fetched during enhancement phase (optional)
 
 ### Human-in-the-Loop Control
-- **max_iterations**: Maximum allowed iterations (default: 3)
-- **user_satisfied**: User satisfaction with current draft (Boolean: feedback presence indicates dissatisfaction)
-- **needs_context_enhancement**: ⭐ **NEW** Flag indicating whether context enhancement is needed
-- **context_enhancement_attempted**: ⭐ **NEW** Track if enhancement has been tried (prevent loops)
+- **refinement_feedback**: `Optional[str]` - Stores user's instructions for content changes. If `None`, the user is satisfied.
+- **synthesis_iteration_count**: `int` - Tracks the number of refinement cycles.
+- **publishing_decision**: `Optional[Literal["ghost", "local", "discard"]]` - Stores the user's final choice after content is approved.
 
 ### Workflow Control
 - **current_step**: Current workflow step identifier
 - **processing_complete**: Workflow completion flag
 - **errors**: Error messages encountered during execution
-
-### Publishing Control
-- **publish_to_blog**: User choice for publishing vs draft-only
-- **publication_result**: Publishing operation results and metadata
+- **local_draft_path**: `Optional[str]` - Path to the saved local draft.
+- **published_url**: `Optional[str]` - URL of the published post on Ghost.
 
 ### Metadata
 - **workflow_id**: Unique workflow identifier
 - **start_time**: Workflow initiation timestamp
 - **step_timestamps**: Completion time for each step
-- **context_fetch_stats**: ⭐ **NEW** Token usage and API call tracking for context operations
 
 ---
 
