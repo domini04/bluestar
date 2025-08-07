@@ -49,10 +49,15 @@ class Config:
         # Get API key based on provider
         self.llm_api_key = self._get_provider_api_key()
         
-        # Blog Platform Configuration
-        self.blog_platform = os.getenv("BLUESTAR_BLOG_PLATFORM", "ghost")
-        self.blog_api_url = os.getenv("BLUESTAR_BLOG_API_URL")
-        self.blog_api_key = os.getenv("BLUESTAR_BLOG_API_KEY")
+        # Ghost CMS Configuration (loaded if platform is 'ghost')
+        self.ghost_api_url: Optional[str] = None
+        self.ghost_admin_api_key: Optional[str] = None
+        
+        # Check for blog platform and load specific configs
+        blog_platform = os.getenv("BLUESTAR_BLOG_PLATFORM", "ghost").lower()
+        if blog_platform == "ghost":
+            self.ghost_api_url = os.getenv("GHOST_API_URL")
+            self.ghost_admin_api_key = os.getenv("GHOST_ADMIN_API_KEY")
         
         # Repository Configuration
         self.default_repo_path = os.getenv("BLUESTAR_DEFAULT_REPO", str(self.project_root))
@@ -120,8 +125,7 @@ class Config:
         """String representation of config (hiding sensitive data)."""
         return (f"Config(provider={self.llm_provider}, "
                 f"model={self.llm_model}, "
-                f"platform={self.blog_platform}, "
-                f"api_key_configured={bool(self.llm_api_key)})")
+                f"ghost_api_configured={bool(self.ghost_admin_api_key)})")
 
 
 # Global config instance

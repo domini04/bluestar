@@ -7,10 +7,18 @@ the Ghost Admin API.
 """
 
 import html
+import re
 from typing import List
 
 from ..formats.llm_outputs import BlogPostOutput, ContentBlock, ParagraphBlock, HeadingBlock, ListBlock, CodeBlock
 from ..formats.blog_formats import GhostBlogPost, GhostTag, GhostAuthor
+
+def _create_slug(title: str) -> str:
+    """Converts a string into a URL-friendly slug."""
+    title = title.lower()
+    title = re.sub(r'[^\w\s-]', '', title)
+    title = re.sub(r'[-\s]+', '-', title)
+    return title.strip('-')
 
 class GhostHtmlRenderer:
     """
@@ -30,9 +38,10 @@ class GhostHtmlRenderer:
         # 1. Render the body content blocks into a single HTML string
         body_html = self._render_body(blog_post_output.body)
 
-        # 2. Map the metadata from BlogPostOutput to GhostBlogPost fields
+        # 2. Create the GhostBlogPost object with all necessary fields
         ghost_post = GhostBlogPost(
             title=blog_post_output.title,
+            slug=_create_slug(blog_post_output.title), # Explicitly create the slug
             html=body_html,
             excerpt=blog_post_output.summary,
             meta_description=blog_post_output.summary,

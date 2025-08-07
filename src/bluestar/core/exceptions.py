@@ -53,6 +53,11 @@ class CommitAnalysisError(WorkflowError):
     pass
 
 
+class PublishingError(WorkflowError):
+    """Errors related to publishing content to external platforms."""
+    pass
+
+
 # LLM Integration Errors
 class LLMError(BlueStarError):
     """BlueStar-specific LLM errors (wraps LangChain exceptions)."""

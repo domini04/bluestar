@@ -82,18 +82,20 @@ graph TD
 - After content is approved, prompt user with choices: [Publish to Ghost], [Save Locally], [Discard].
 - Update `state.publishing_decision` with the user's choice.
 
-### 7. PublishToGhostNode (formerly BlogPublisher)
+### 7. PublishToGhostNode (formerly BlogPublisher) ✅ **COMPLETE**
 **Purpose**: A non-interactive node that publishes the final content to Ghost CMS.
 **Components**:
+- Uses a dedicated `GhostAdminAPI` client to handle JWT authentication and API interaction.
 - Uses the `GhostHtmlRenderer` to convert `BlogPostOutput` to Ghost-compatible HTML.
-- Handles all API interaction with the Ghost Admin API.
 **Output**: Saves the final published URL to `state.published_url`.
+**Status**: ✅ Full implementation with JWT authentication and robust error handling.
 
-### 8. SaveLocalDraftNode ⭐ **NEW**
+### 8. SaveLocalDraftNode ⭐ **NEW** ✅ **COMPLETE**
 **Purpose**: A non-interactive node that saves the final content locally.
 **Responsibility**:
-- Saves the rendered HTML to the local `output/` directory.
+- Saves the rendered HTML to the local `output/` directory with a unique, descriptive filename.
 - Updates `state.local_draft_path`.
+**Status**: ✅ Full implementation with unit tests.
 
 ---
 

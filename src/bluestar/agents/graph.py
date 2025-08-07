@@ -16,7 +16,9 @@ from .nodes import (
     commit_analyzer_node,
     content_synthesizer_node,
     human_refinement_node,
-    publishing_decision_node
+    publishing_decision_node,
+    save_local_draft_node,
+    publish_to_ghost_node
 )
 
 
@@ -60,22 +62,6 @@ def route_after_publishing_decision(state: AgentState) -> Literal["publish_to_gh
 
 # ============================ NODES (Placeholders) ============================
 
-def placeholder_publish_to_ghost(state: AgentState) -> AgentState:
-    """Placeholder for the PublishToGhostNode."""
-    print("✅ Blog post would be published to Ghost here.")
-    state.mark_step_complete("publish_to_ghost")
-    state.processing_complete = True
-    return state
-
-
-def placeholder_save_local_draft(state: AgentState) -> AgentState:
-    """Placeholder for the SaveLocalDraftNode."""
-    print("✅ Blog post draft would be saved locally here.")
-    state.mark_step_complete("save_local_draft")
-    state.processing_complete = True
-    return state
-
-
 def create_workflow() -> StateGraph:
     """
     Create and configure the BlueStar workflow graph.
@@ -89,8 +75,8 @@ def create_workflow() -> StateGraph:
     workflow.add_node("content_synthesizer", content_synthesizer_node)
     workflow.add_node("human_refinement_node", human_refinement_node)
     workflow.add_node("publishing_decision", publishing_decision_node)
-    workflow.add_node("publish_to_ghost", placeholder_publish_to_ghost)
-    workflow.add_node("save_local_draft", placeholder_save_local_draft)
+    workflow.add_node("publish_to_ghost", publish_to_ghost_node)
+    workflow.add_node("save_local_draft", save_local_draft_node)
 
     # Define workflow edges
     workflow.add_edge("input_validator", "commit_fetcher")

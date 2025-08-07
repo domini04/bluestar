@@ -16,3 +16,12 @@ wheels/
 todo.md
 recc.md
 Commit_Synthesizer_plans.md
+
+#test files
+tests/
+
+#logs
+logs/
+
+#locally saved drafts
+output/
