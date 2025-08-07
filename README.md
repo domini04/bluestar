@@ -16,9 +16,9 @@ BlueStar analyzes Git commits to understand development progress and context, th
 - 🤖 **AI-Powered Analysis**: LLM-powered commit analysis with context assessment
 - 📊 **Enhanced Context**: Automatic repository metadata, README, and config integration  
 - 🔬 **Quality Assurance**: Systematic evaluation framework with LangSmith tracing
-- 📝 **Blog Generation**: Creates structured, narrative blog posts *(In Development)*
+- 📝 **Blog Generation**: Creates structured, narrative blog posts
 - 🔄 **Self-RAG**: Self-reflection and refinement for quality improvement *(Planned)*
-- 👤 **Human-in-the-Loop**: Interactive context gathering and review *(In Development)*
+- 👤 **Human-in-the-Loop**: Interactive content refinement and publishing decisions
 
 ## Development Status
 
@@ -28,7 +28,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - Project structure, dependencies, configuration management
   - Data models (CommitData, CommitAnalysis, GhostBlogPost)
   - Custom exception handling and testing infrastructure
-- **Phase 1**: Core MVP (single commit → basic blog post) 🔄 *(In Progress)*
+- **Phase 1**: Core MVP (single commit → blog post) ✅ *(Completed)*
   - ✅ GitHub API client with authentication and rate limiting
   - ✅ Commit data parsing and structured models
   - ✅ Real GitHub API integration tested successfully
@@ -40,14 +40,13 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - ✅ **Enhanced CommitFetcher**: Core context integration (repo metadata, README, config)
   - ✅ **InputValidator**: Structured input validation and normalization
   - ✅ **CommitAnalyzer**: LLM-powered analysis with quality evaluation framework
-    - Multi-file diff processing, LangSmith tracing, comprehensive testing
-    - Critical bug fix applied, quality improved from 3.5/5 to 4.8/5 scores
-  - 🔄 **ContentSynthesizer**: Blog generation with project context - *Next Priority*
-  - 🔄 **HumanReviewLoop**: Interactive improvement workflow
-  - 🔄 Complete end-to-end workflow orchestration
-- **Phase 2**: Analysis Enhancement & Multi-commit support
-- **Phase 3**: Publishing Integration & Human-in-the-Loop
-- **Phase 4**: Advanced Features & Final Packaging
+  - ✅ **ContentSynthesizer**: Blog generation with project context
+  - ✅ **HumanReviewLoop**: Interactive improvement workflow
+  - ✅ **Publishing Nodes**: Final output nodes for saving locally or publishing
+  -  **End-to-end Workflow Testing**: Complete orchestration from input to final output.
+- **Phase 2**: Analysis Enhancement & Multi-commit support 🔄 *(Next Priority)*
+- **Phase 3**: Publishing Integration & Human-in-the-Loop 🔄 *(In Progress)*
+- **Phase 4**: Advanced Features & Final Packaging 🔄 *(Planned)*
 
 ## Technology Stack
 
@@ -110,7 +109,7 @@ python -m src.bluestar.main --repo https://github.com/microsoft/vscode --commit 
 python -m src.bluestar.main --config-check
 
 # Run tests
-pytest tests/
+uv run pytest tests/
 ```
 
 ## Development
