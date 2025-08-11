@@ -11,7 +11,7 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import ValidationError
 
 from ..state import AgentState
-from ...core.llm import llm_client
+from ...core.llm import LLMClient
 from ...core.exceptions import LLMError, ConfigurationError
 from ...prompts import create_commit_analysis_prompt
 from ...formats.commit_data import CommitAnalysis 
@@ -171,7 +171,7 @@ def commit_analyzer_node(state: AgentState) -> AgentState:
     try:
         # Initialize LLM client with analysis-appropriate settings
         logger.debug("Initializing LLM client for commit analysis")
-        llm = llm_client.get_client(
+        llm = LLMClient().get_client(
             temperature=0.3,      # Conservative for factual analysis
             max_tokens=200000,    # Generous token budget as requested
             timeout=60            # 1 minute timeout as requested

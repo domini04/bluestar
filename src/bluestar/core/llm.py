@@ -25,13 +25,22 @@ logger = logging.getLogger(__name__)
 
 
 class LLMClient:
-    """LLM client factory for creating configured LangChain clients."""
+    """LLM client factory for creating configured LangChain clients.
+
+    Optionally accepts provider/model/api_key overrides. If not provided,
+    values are read from global config (which may have CLI/env overrides applied).
+    """
     
-    def __init__(self):
-        """Initialize the LLM client factory with configuration."""
-        self.provider = config.llm_provider
-        self.model = config.llm_model
-        self.api_key = config.llm_api_key
+    def __init__(
+        self,
+        provider: Optional[str] = None,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        """Initialize the LLM client factory with configuration or overrides."""
+        self.provider = (provider or config.llm_provider)
+        self.model = (model or config.llm_model)
+        self.api_key = (api_key if api_key is not None else config.llm_api_key)
         
         # Validate configuration
         self._validate_configuration()
@@ -52,7 +61,7 @@ class LLMClient:
     def get_client(
         self, 
         temperature: float = 0.7, 
-        max_tokens: int = 10000,
+        max_tokens: int = 50000,
         timeout: int = 60,
         **kwargs
     ) -> BaseChatModel:
@@ -173,5 +182,20 @@ class LLMClient:
         return f"LLMClient(provider={self.provider}, model={self.model})"
 
 
-# Global LLM client factory instance
-llm_client = LLMClient() 
+def get_llm_client_from_config(
+    temperature: float = 0.7,
+    max_tokens: int = 50000,
+    timeout: int = 60,
+    **kwargs,
+):
+    """Convenience: create a client using current config (with overrides applied)."""
+    factory = LLMClient()
+    return factory.get_client(
+        temperature=temperature,
+        max_tokens=max_tokens,
+        timeout=timeout,
+        **kwargs,
+    )
+
+# Back-compat export; prefer using get_llm_client_from_config or LLMClient(...)
+llm_client = LLMClient()

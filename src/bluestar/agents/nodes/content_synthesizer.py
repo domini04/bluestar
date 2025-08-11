@@ -11,7 +11,7 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import ValidationError
 
 from ..state import AgentState
-from ...core.llm import llm_client
+from ...core.llm import LLMClient
 from ...core.exceptions import LLMError, ConfigurationError
 from ...formats.llm_outputs import BlogPostOutput
 from ...prompts.initial_generation import initial_generation_prompt
@@ -147,7 +147,8 @@ def content_synthesizer_node(state: AgentState) -> AgentState:
         temperature = prompt_info["temperature"]
         prompt_context = prompt_info["context"]
 
-        llm = llm_client.get_client(temperature=temperature)
+        # Build client using current (possibly overridden) config
+        llm = LLMClient().get_client(temperature=temperature)
         parser = PydanticOutputParser(pydantic_object=BlogPostOutput)
         
         chain = prompt | llm | parser

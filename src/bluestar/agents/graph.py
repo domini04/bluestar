@@ -24,7 +24,7 @@ from .nodes import (
 
 
 # ============================ CONDITIONAL EDGES ============================
-def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer", "publishing_decision"]:
+def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer", "publishing_decision_step"]:
     """
     Determine if content synthesis should continue iterating or move to publishing.
     
@@ -37,11 +37,11 @@ def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer
     # First, check if we've hit the maximum number of iterations
     if state.synthesis_iteration_count >= state.max_iterations:
         print(f"⚠️ Max iterations ({state.max_iterations}) reached. Moving to publishing decision.")
-        return "publishing_decision"
+        return "publishing_decision_step"
 
     # If user is satisfied, move to the next step
     if state.user_satisfied:
-        return "publishing_decision"
+        return "publishing_decision_step"
     
     # Otherwise, loop back for another refinement iteration
     return "content_synthesizer"
@@ -74,7 +74,7 @@ def create_workflow() -> StateGraph:
     workflow.add_node("commit_analyzer", commit_analyzer_node)
     workflow.add_node("content_synthesizer", content_synthesizer_node)
     workflow.add_node("human_refinement_node", human_refinement_node)
-    workflow.add_node("publishing_decision", publishing_decision_node)
+    workflow.add_node("publishing_decision_step", publishing_decision_node)
     workflow.add_node("publish_to_ghost", publish_to_ghost_node)
     workflow.add_node("save_local_draft", save_local_draft_node)
 
@@ -90,13 +90,13 @@ def create_workflow() -> StateGraph:
         should_continue_iteration,
         {
             "content_synthesizer": "content_synthesizer",
-            "publishing_decision": "publishing_decision"
+            "publishing_decision_step": "publishing_decision_step"
         }
     )
 
     # Conditional edge: publishing decision
     workflow.add_conditional_edges(
-        "publishing_decision",
+        "publishing_decision_step",
         route_after_publishing_decision,
         {
             "publish_to_ghost": "publish_to_ghost",

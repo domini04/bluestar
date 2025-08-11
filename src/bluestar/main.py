@@ -3,7 +3,6 @@ BlueStar Main Entry Point
 
 Handles different execution modes:
 - CLI mode for development and testing
-- Future: MCP server mode for tool integration
 """
 
 import sys
@@ -42,6 +41,17 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--instructions",
         help="Additional instructions for blog generation"
+    )
+
+    # LLM selection overrides
+    parser.add_argument(
+        "--llm-provider",
+        choices=["openai", "claude", "gemini", "grok"],
+        help="Override LLM provider (allowed: openai, claude, gemini, grok)"
+    )
+    parser.add_argument(
+        "--llm-model",
+        help="Override LLM model (free-form, e.g., gpt-5, claude-4-opus, gemini-2.5-pro)"
     )
     
     parser.add_argument(
@@ -131,6 +141,16 @@ def main() -> None:
     """Main entry point for BlueStar application."""
     parser = create_parser()
     args = parser.parse_args()
+
+    # Apply LLM overrides (CLI > env > defaults)
+    try:
+        config.apply_overrides(
+            llm_provider=args.llm_provider,
+            llm_model=args.llm_model,
+        )
+    except Exception as e:
+        print(f"❌ Invalid LLM selection: {e}")
+        sys.exit(1)
     
     # Configuration check mode
     if args.config_check:
