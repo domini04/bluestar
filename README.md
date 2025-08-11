@@ -43,7 +43,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - ✅ **ContentSynthesizer**: Blog generation with project context
   - ✅ **HumanReviewLoop**: Interactive improvement workflow
   - ✅ **Publishing Nodes**: Final output nodes for saving locally or publishing
-  -  **End-to-end Workflow Testing**: Complete orchestration from input to final output.
+  - ✅ **End-to-end Workflow Testing**: Complete orchestration from input to final output (local save path)
 - **Phase 2**: Analysis Enhancement & Multi-commit support 🔄 *(Next Priority)*
 - **Phase 3**: Publishing Integration & Human-in-the-Loop 🔄 *(In Progress)*
 - **Phase 4**: Advanced Features & Final Packaging 🔄 *(Planned)*
@@ -86,10 +86,19 @@ cp .env.example .env
 Set the following environment variables in your `.env` file:
 
 ```env
-BLUESTAR_LLM_PROVIDER=openai
-BLUESTAR_LLM_MODEL=gpt-4o-mini  
-BLUESTAR_LLM_API_KEY=your_api_key_here
+# LLM selection (provider required, model optional)
+BLUESTAR_LLM_PROVIDER=openai           # allowed: openai, claude, gemini, grok
+BLUESTAR_LLM_MODEL=gpt-5               # optional; defaults per provider (e.g., openai→gpt-5, gemini→gemini-2.5-pro)
+
+# Provider-specific API key (set the one matching your provider)
+OPENAI_API_KEY=your_openai_key         # or
+ANTHROPIC_API_KEY=your_claude_key      # or
+GOOGLE_API_KEY=your_gemini_key         # or
+GROK_API_KEY=your_grok_key
+
+# GitHub
 GITHUB_TOKEN=your_github_token_here
+
 BLUESTAR_LOG_LEVEL=INFO
 ```
 
@@ -101,6 +110,11 @@ python -m src.bluestar.main
 
 # CLI with command line arguments
 python -m src.bluestar.main --repo microsoft/vscode --commit abc123def456
+
+# Override LLM selection from CLI (provider allowlist + free-form model)
+python -m src.bluestar.main \
+  --repo microsoft/vscode --commit abc123def456 \
+  --llm-provider openai --llm-model gpt-5
 
 # CLI with additional instructions
 python -m src.bluestar.main --repo https://github.com/microsoft/vscode --commit abc123def456 --instructions "Focus on performance improvements"

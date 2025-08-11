@@ -272,3 +272,12 @@ CommitData → CommitAnalysis → GhostBlogPost
 **Impact**:
 - The application is more resilient and does not crash if publishing credentials are not configured.
 - The user experience is improved, as the user is only prompted for credentials when they are actually required.
+
+---
+
+### **August 11, 2025 — LLM Selection: Allowlisted Providers, Free-Form Models**
+
+- **Issue**: Needed user-chosen models without expanding providers; prior single-model-per-provider + global client blocked runtime choice.
+- **Decision**: Enforce provider allowlist (openai, claude, gemini, grok) and accept free-form model; build LLM client on demand; support CLI/env overrides (CLI > env > defaults).
+- **Why**: Governance + flexibility, avoid brittle model catalogs, remove global singleton.
+- **Impact**: Users pick any model within allowed providers; invalid provider fails early; invalid model surfaces at client creation; defaults future‑proofed (OpenAI→gpt‑5, Grok→grok‑4‑0709).

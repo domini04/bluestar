@@ -326,7 +326,7 @@ Start → ... → ContentSynthesizer → [HIL 1] HumanRefinementNode →
 - [ ] User can select target commits easily
 - [x] Human-in-the-loop works smoothly
 - [ ] Context assessment accuracy > 80%
-- [x] Complete workflow runs reliably
+- [x] Complete workflow runs reliably (E2E local save path tested)
 
 ---
 
@@ -548,7 +548,7 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 1. ✅ **Enhanced CommitFetcher**: GitHub API data extraction **with core context integration** - COMPLETE
 2. ✅ **Context-aware ContentSynthesizer**: LLM blog generation **with project context** - COMPLETE
 3. ✅ **BlogPublisher & SaveLocalDraft Nodes**: Implement publishing and saving logic - COMPLETE
-4. **End-to-End Validation**: Validate the full `commit -> draft` workflow - NEXT
+4. ✅ **End-to-End Validation**: Full `commit -> draft` workflow (local save path) - COMPLETE
 
 
 ### 🚀 **Priority 2: Phase 1.5 Context Enhancement**
