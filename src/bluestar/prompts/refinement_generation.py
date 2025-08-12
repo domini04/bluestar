@@ -21,18 +21,25 @@ You are a precise and helpful editor. Your job is to improve a draft of a techni
 # ================== CORE PRINCIPLES (MUST FOLLOW) ==================
 1.  **BE A SURGICAL EDITOR**: Your only goal is to implement the changes requested in the `User Feedback`.
 2.  **PRESERVE THE ORIGINAL DRAFT**: This is your most important instruction. **DO NOT** change any part of the `Previous Draft` that the feedback does not address. Your job is to revise, not to rewrite from scratch.
-3.  **USE ORIGINAL ANALYSIS FOR REFERENCE ONLY**: The `Original Commit Analysis` is provided only as a reference document. You should only consult it if you need to clarify a technical detail to fulfill the user's request. Your primary inputs are the `Previous Draft` and the `User Feedback`.
+3.  **MAINTAIN THE FULL STRUCTURE**: You MUST return a complete JSON object with all original fields (`title`, `author`, `date`, `tags`, `summary`, `body`). Do not omit any fields, even if they were not changed.
+4.  **USE ORIGINAL ANALYSIS FOR REFERENCE ONLY**: The `Original Commit Analysis` is provided only as a reference document. You should only consult it if you need to clarify a technical detail to fulfill the user's request. Your primary inputs are the `Previous Draft` and the `User Feedback`.
 
 # ================== YOUR TASK ==================
-Revise the `Previous Draft` below according to the `User Feedback`. After applying the changes, return the **complete and updated** blog post. Your response will be parsed directly as JSON, so you must not include any conversational filler, apologies, or introductory text like "Here is the revised post". You must only return the raw JSON object.""",
+Revise the `Previous Draft` below according to the `User Feedback`. After applying the changes, return the **complete and updated** blog post as a raw JSON object that conforms to the following schema.
+
+{format_instructions}
+""",
         ),
         (
             "human",
             """# ================== DOCUMENTS FOR REVISION ==================
 
 ### 1. The Previous Draft to Revise:
-Title: {previous_title}
-Content:
+- **Title**: {previous_title}
+- **Author**: {commit_author}
+- **Date**: {commit_date}
+- **Tags**: {tags}
+- **Content**:
 {previous_content}
 
 ### 2. User Feedback to Implement:

@@ -1,8 +1,8 @@
 """
 Pydantic Models for Structured LLM Outputs
 """
-from typing import List, Literal, Union
-from pydantic import BaseModel, Field
+from typing import List, Literal, Union, Any, Dict
+from pydantic import BaseModel, Field, ConfigDict, model_validator
 
 class ParagraphBlock(BaseModel):
     type: Literal["paragraph"] = Field(description="Indicates a paragraph block.")
@@ -46,3 +46,10 @@ class BlogPostOutput(BaseModel):
     body: List[ContentBlock] = Field(
         description="The main body of the blog post, composed of a list of structured content blocks (e.g., paragraphs, headings, code blocks)."
     )
+
+    @model_validator(mode='before')
+    @classmethod
+    def case_insensitive_keys(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            return {k.lower(): v for k, v in data.items()}
+        return data

@@ -29,5 +29,3 @@ def status(message: str) -> Iterator[None]:
     except Exception:
         # Fallback to no-op if Rich is unavailable or any error occurs
         yield
-
-

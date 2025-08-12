@@ -5,7 +5,7 @@ LLM-powered generation of blog posts from structured CommitAnalysis.
 Supports both initial draft creation and iterative refinement based on user feedback.
 """
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import ValidationError
@@ -13,10 +13,18 @@ from pydantic import ValidationError
 from ..state import AgentState
 from ...core.llm import LLMClient
 from ...core.exceptions import LLMError, ConfigurationError
-from ...formats.llm_outputs import BlogPostOutput
+from ...formats.llm_outputs import (
+    BlogPostOutput,
+    ContentBlock,
+    ParagraphBlock,
+    HeadingBlock,
+    ListBlock,
+    CodeBlock,
+)
 from ...prompts.initial_generation import initial_generation_prompt
 from ...prompts.refinement_generation import refinement_generation_prompt
 from ...utils.cli_progress import status
+from ...utils.rendering import render_body_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -82,13 +90,15 @@ def _extract_prompt_data(state: AgentState) -> Dict[str, Any]:
 
     if state.user_feedback and state.blog_post:  # Refinement Mode
         logger.info("Assembling context for refinement generation.")
+        previous_content_str = render_body_to_string(state.blog_post.body)
         return {
             "prompt": refinement_generation_prompt,
             "temperature": 0.2,
             "context": {
                 "previous_title": state.blog_post.title,
-                "previous_content": state.blog_post.content,
+                "previous_content": previous_content_str,
                 "user_feedback": state.user_feedback,
+                "tags": ", ".join(state.blog_post.tags),
                 "change_type": commit_analysis.change_type,
                 "technical_summary": commit_analysis.technical_summary,
                 "business_impact": commit_analysis.business_impact,

@@ -3,43 +3,29 @@ from rich.console import Console
 from rich.markdown import Markdown
 
 from ..state import AgentState
-from ...formats.llm_outputs import (
-    BlogPostOutput,
-    ContentBlock,
-    HeadingBlock,
-    ParagraphBlock,
-    CodeBlock,
-    ListBlock,
-)
+from ...formats.llm_outputs import BlogPostOutput
+from ...utils.rendering import render_body_to_string
 
-def _convert_blog_post_to_markdown(blog_post: BlogPostOutput) -> str: #TODO: Adding this makes the BlogPostOutput render twice. Once to markdown, then to Ghost Blog format later. Consider if this is optimal.
+
+def _convert_blog_post_to_markdown(blog_post: BlogPostOutput) -> str:
     """Converts a BlogPostOutput object to a Markdown string."""
-    markdown_parts = []
     
-    # Add Title
-    markdown_parts.append(f"# {blog_post.title}\n")
+    # Render the structured body content using the shared utility
+    body_markdown = render_body_to_string(blog_post.body)
     
-    # Add Summary
-    markdown_parts.append(f"_{blog_post.summary}_\n")
+    # Combine title, summary, and body into a single markdown string
+    markdown_parts = [
+        f"# {blog_post.title}",
+        f"_{blog_post.summary}_",
+        body_markdown
+    ]
     
-    # Add Body Content
-    for block in blog_post.body:
-        if isinstance(block, HeadingBlock):
-            markdown_parts.append(f"{'#' * block.level} {block.content}")
-        elif isinstance(block, ParagraphBlock):
-            markdown_parts.append(block.content)
-        elif isinstance(block, CodeBlock):
-            markdown_parts.append(f"```{block.language}\n{block.content}\n```")
-        elif isinstance(block, ListBlock):
-            for item in block.items:
-                markdown_parts.append(f"- {item}")
-        markdown_parts.append("\n") # Add a newline for spacing between blocks
+    return "\n\n".join(markdown_parts)
 
-    return "\n".join(markdown_parts)
 
 def human_refinement_node(state: AgentState) -> AgentState:
     """
-    Presents the draft to the user, gets feedback, and updates the state.
+    Human-in-the-Loop (HIL) node for refining generated content.
     """
     if not state.blog_post:
         # Should not happen, but as a safeguard
