@@ -153,8 +153,16 @@ class Config:
             is_valid = False
         
         # Validate provider
-        if self.llm_provider not in self.llm_models:
-            print(f"Error: Invalid LLM provider '{self.llm_provider}'")
+        if self.llm_provider not in self.allowed_llm_providers:
+            print(
+                f"Error: Invalid LLM provider '{self.llm_provider}'. "
+                f"Allowed: {sorted(list(self.allowed_llm_providers))}"
+            )
+            is_valid = False
+
+        # Validate model (non-empty); actual validity checked at client creation
+        if not self.llm_model or not str(self.llm_model).strip():
+            print("Error: LLM model must be a non-empty string")
             is_valid = False
             
         return is_valid

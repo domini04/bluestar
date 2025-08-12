@@ -1,6 +1,6 @@
 from typing import Literal
 
-from bluestar.agents.state import AgentState
+from ..state import AgentState
 
 def publishing_decision_node(state: AgentState) -> AgentState:
     """

@@ -77,7 +77,7 @@ cd bluestar
 uv sync
 
 # Set up environment variables
-cp .env.example .env
+cp .env.copy .env
 # Edit .env with your API keys
 ```
 

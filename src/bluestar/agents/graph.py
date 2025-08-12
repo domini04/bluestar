@@ -24,6 +24,19 @@ from .nodes import (
 
 
 # ============================ CONDITIONAL EDGES ============================
+def check_commit_data(state: AgentState) -> Literal["continue", "end"]:
+    """
+    Check if commit_data was successfully fetched.
+    
+    If not, end the workflow to prevent errors in downstream nodes.
+    """
+    if state.commit_data:
+        return "continue"
+    else:
+        print("❌ Halting workflow: Commit data could not be fetched.")
+        return "end"
+
+
 def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer", "publishing_decision_step"]:
     """
     Determine if content synthesis should continue iterating or move to publishing.
@@ -80,7 +93,17 @@ def create_workflow() -> StateGraph:
 
     # Define workflow edges
     workflow.add_edge("input_validator", "commit_fetcher")
-    workflow.add_edge("commit_fetcher", "commit_analyzer")
+    
+    # Conditional edge: Check if commit data was fetched successfully
+    workflow.add_conditional_edges(
+        "commit_fetcher",
+        check_commit_data,
+        {
+            "continue": "commit_analyzer",
+            "end": END
+        }
+    )
+
     workflow.add_edge("commit_analyzer", "content_synthesizer")
     workflow.add_edge("content_synthesizer", "human_refinement_node")
 

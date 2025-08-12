@@ -15,6 +15,7 @@ from ...core.llm import LLMClient
 from ...core.exceptions import LLMError, ConfigurationError
 from ...prompts import create_commit_analysis_prompt
 from ...formats.commit_data import CommitAnalysis 
+from ...utils.cli_progress import status
 
 logger = logging.getLogger(__name__)
 
@@ -192,9 +193,11 @@ def commit_analyzer_node(state: AgentState) -> AgentState:
         # Create and execute the analysis chain
         logger.debug("Executing LLM analysis chain: prompt | llm | parser")
         chain = prompt | llm | parser
-        
-        # Run analysis
-        analysis: CommitAnalysis = chain.invoke(prompt_data)
+
+        # Show CLI status while running the long LLM call
+        display_model = f"{LLMClient().provider}:{LLMClient().model}"
+        with status(f"Analyzing commit {state.commit_sha[:8]} with {display_model}..."):
+            analysis: CommitAnalysis = chain.invoke(prompt_data)
         
         # Store analysis results in state
         state.commit_analysis = analysis

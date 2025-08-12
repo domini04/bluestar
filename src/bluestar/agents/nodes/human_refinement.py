@@ -2,8 +2,15 @@ from typing import List
 from rich.console import Console
 from rich.markdown import Markdown
 
-from bluestar.agents.state import AgentState
-from bluestar.formats.llm_outputs import BlogPostOutput, ContentBlock, HeadingBlock, ParagraphBlock, CodeBlock, ListBlock
+from ..state import AgentState
+from ...formats.llm_outputs import (
+    BlogPostOutput,
+    ContentBlock,
+    HeadingBlock,
+    ParagraphBlock,
+    CodeBlock,
+    ListBlock,
+)
 
 def _convert_blog_post_to_markdown(blog_post: BlogPostOutput) -> str: #TODO: Adding this makes the BlogPostOutput render twice. Once to markdown, then to Ghost Blog format later. Consider if this is optimal.
     """Converts a BlogPostOutput object to a Markdown string."""

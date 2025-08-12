@@ -7,6 +7,7 @@ Handles different execution modes:
 
 import sys
 import argparse
+import uuid
 from typing import Optional
 
 from .cli import run_cli
@@ -106,7 +107,7 @@ def run_cli_with_args(repo: str, commit: str, instructions: Optional[str] = None
         instructions: Optional user instructions
     """
     from .agents.state import AgentState
-    from .agents.graph import create_workflow
+    from .agents.graph import create_app
     from .cli import display_result
     
     print("🌟 BlueStar - AI Developer Blog Generator")
@@ -125,15 +126,34 @@ def run_cli_with_args(repo: str, commit: str, instructions: Optional[str] = None
             user_instructions=instructions
         )
         
-        # Create and execute workflow
-        workflow = create_workflow()
-        result_state = workflow.invoke(initial_state)
+        # Create and execute compiled app
+        app = create_app()
+        
+        # Each run needs a unique thread_id for the checkpointer
+        thread_id = str(uuid.uuid4())
+        config = {"configurable": {"thread_id": thread_id}}
+
+        print(f"🚀 Starting workflow (Thread ID: {thread_id})...")
+        final_state = None
+        # Use stream to get progress and final state
+        for step in app.stream(initial_state, config=config, stream_mode="values"):
+            step_name = list(step.keys())[0]
+            print(f"  - ✅ Completed: {step_name}")
+            final_state = step
+
+        if not final_state:
+            raise Exception("Workflow did not produce any output.")
+
+        # The final state is the value of the last step
+        result_state = list(final_state.values())[0]
         
         # Display results
         display_result(result_state)
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Workflow Execution Error: {e}")
+        print("\nThis might be due to a configuration issue with the checkpointer or an error within a graph node.")
+        print("Ensure your graph is correctly compiled and all required configurations (like thread_id) are provided.")
         sys.exit(1)
 
 

@@ -104,6 +104,15 @@ def display_result(state: AgentState) -> None:
     print("🎉 WORKFLOW COMPLETE")
     print("=" * 60)
     
+    # Check if the final state is a valid AgentState object.
+    # If not, the workflow likely terminated early.
+    if not isinstance(state, AgentState):
+        print("\nℹ️  Workflow was halted before completion.")
+        print("This may be due to an error or a deliberate stop condition in the graph.")
+        # Optionally print the raw state for debugging
+        # print(f"\nDEBUG: Final state was: {state}")
+        return
+
     # Display basic information
     print(f"📁 Repository: {state.repo_identifier}")
     print(f"🔗 Commit SHA: {state.commit_sha}")

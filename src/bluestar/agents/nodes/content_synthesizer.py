@@ -16,6 +16,7 @@ from ...core.exceptions import LLMError, ConfigurationError
 from ...formats.llm_outputs import BlogPostOutput
 from ...prompts.initial_generation import initial_generation_prompt
 from ...prompts.refinement_generation import refinement_generation_prompt
+from ...utils.cli_progress import status
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +155,9 @@ def content_synthesizer_node(state: AgentState) -> AgentState:
         chain = prompt | llm | parser
 
         logger.debug("Executing LLM generation chain...")
-        llm_output: BlogPostOutput = chain.invoke(prompt_context)
+        display_model = f"{LLMClient().provider}:{LLMClient().model}"
+        with status(f"Generating draft (iteration {iteration}) with {display_model}..."):
+            llm_output: BlogPostOutput = chain.invoke(prompt_context)
 
         # Update state with the new blog post
         state.blog_post = llm_output
