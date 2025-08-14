@@ -8,6 +8,8 @@ Provides user input collection and workflow execution.
 import sys
 from typing import Optional, Tuple
 
+from .config import config as settings
+
 from .agents.state import AgentState
 from .agents.graph import create_workflow
 from .core.exceptions import BlueStarError
@@ -85,11 +87,14 @@ def collect_user_input() -> AgentState:
     print("   Examples: 'Focus on performance improvements', 'Make it beginner-friendly'")
     instructions = input("   Instructions: ").strip()
     
+    # Optional: preselect publishing decision via env var BLUESTAR_PUBLISH (ghost|notion|local|discard)
+    preselect_publish = (settings and settings.__dict__.get("preselect_publish")) or None
     # Create structured AgentState
     return AgentState(
         repo_identifier=repo_input,
         commit_sha=commit_sha,
-        user_instructions=instructions if instructions else None
+        user_instructions=instructions if instructions else None,
+        publishing_decision=preselect_publish if preselect_publish in {"ghost", "notion", "local", "discard"} else None,
     )
 
 

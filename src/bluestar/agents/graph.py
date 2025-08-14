@@ -18,7 +18,8 @@ from .nodes import (
     human_refinement_node,
     publishing_decision_node,
     save_local_draft_node,
-    publish_to_ghost_node
+    publish_to_ghost_node,
+    publish_to_notion_node
 )
 
 
@@ -60,13 +61,15 @@ def should_continue_iteration(state: AgentState) -> Literal["content_synthesizer
     return "content_synthesizer"
 
 
-def route_after_publishing_decision(state: AgentState) -> Literal["publish_to_ghost", "save_local_draft", "end"]:
+def route_after_publishing_decision(state: AgentState) -> Literal["publish_to_ghost", "publish_to_notion", "save_local_draft", "end"]:
     """
     Determines the next step based on the user's publishing decision.
     """
     decision = state.publishing_decision
     if decision == "ghost":
         return "publish_to_ghost"
+    elif decision == "notion":
+        return "publish_to_notion"
     elif decision == "local":
         return "save_local_draft"
     else:  # This covers "discard" or any other case
@@ -89,6 +92,7 @@ def create_workflow() -> StateGraph:
     workflow.add_node("human_refinement_node", human_refinement_node)
     workflow.add_node("publishing_decision_step", publishing_decision_node)
     workflow.add_node("publish_to_ghost", publish_to_ghost_node)
+    workflow.add_node("publish_to_notion", publish_to_notion_node)
     workflow.add_node("save_local_draft", save_local_draft_node)
 
     # Define workflow edges
@@ -123,6 +127,7 @@ def create_workflow() -> StateGraph:
         route_after_publishing_decision,
         {
             "publish_to_ghost": "publish_to_ghost",
+            "publish_to_notion": "publish_to_notion",
             "save_local_draft": "save_local_draft",
             "end": END
         }
@@ -130,6 +135,7 @@ def create_workflow() -> StateGraph:
 
     # End workflow after publishing or saving
     workflow.add_edge("publish_to_ghost", END)
+    workflow.add_edge("publish_to_notion", END)
     workflow.add_edge("save_local_draft", END)
 
     # Set entry point

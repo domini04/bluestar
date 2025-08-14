@@ -73,7 +73,7 @@ class AgentState:
     
     # ==================== PUBLISHING CONTROL ====================
     # Blog publishing decision and results
-    publishing_decision: Optional[Literal["ghost", "local", "discard"]] = None # User's final choice
+    publishing_decision: Optional[Literal["ghost", "notion", "local", "discard"]] = None # User's final choice
     local_draft_path: Optional[str] = None              # Filesystem path to the saved local draft
     published_url: Optional[str] = None                 # URL of the published post in Ghost
     publication_result: Optional[Dict[str, Any]] = None  # Publishing operation results/metadata

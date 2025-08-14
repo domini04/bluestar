@@ -316,7 +316,7 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 Start → ... → ContentSynthesizer → [HIL 1] HumanRefinementNode →
 [Branch: Refine Content?] → (back to ContentSynthesizer) →
 [Branch: Content Approved] → [HIL 2] PublishingDecisionNode →
-[Branch: Publish] → PublishToGhostNode → End
+[Branch: Publish] → PublishToGhostNode | PublishToNotionNode → End
 [Branch: Save] → SaveLocalDraftNode → End
 [Branch: Discard] → End
 ```
@@ -327,6 +327,7 @@ Start → ... → ContentSynthesizer → [HIL 1] HumanRefinementNode →
 - [x] Human-in-the-loop works smoothly
 - [ ] Context assessment accuracy > 80%
 - [x] Complete workflow runs reliably (E2E local save path tested)
+ - [x] Notion publishing supported (database or page URL) with E2E test
 
 ---
 

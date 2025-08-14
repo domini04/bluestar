@@ -17,6 +17,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
 - 📊 **Enhanced Context**: Automatic repository metadata, README, and config integration  
 - 🔬 **Quality Assurance**: Systematic evaluation framework with LangSmith tracing
 - 📝 **Blog Generation**: Creates structured, narrative blog posts
+- 🚀 **Publishing**: Publish to Ghost or Notion (database or page URL)
 - 🔄 **Self-RAG**: Self-reflection and refinement for quality improvement *(Planned)*
 - 👤 **Human-in-the-Loop**: Interactive content refinement and publishing decisions
 
@@ -45,7 +46,7 @@ BlueStar analyzes Git commits to understand development progress and context, th
   - ✅ **Publishing Nodes**: Final output nodes for saving locally or publishing
   - ✅ **End-to-end Workflow Testing**: Complete orchestration from input to final output (local save path)
 - **Phase 2**: Analysis Enhancement & Multi-commit support 🔄 *(Next Priority)*
-- **Phase 3**: Publishing Integration & Human-in-the-Loop 🔄 *(In Progress)*
+- **Phase 3**: Publishing Integration & Human-in-the-Loop ✅ *(Completed)*
 - **Phase 4**: Advanced Features & Final Packaging 🔄 *(Planned)*
 
 ## Technology Stack
@@ -100,6 +101,15 @@ GROK_API_KEY=your_grok_key
 GITHUB_TOKEN=your_github_token_here
 
 BLUESTAR_LOG_LEVEL=INFO
+
+# Notion (optional)
+NOTION_API_KEY=your_notion_integration_secret
+# Accepts either a database URL or a page URL. If a page URL is provided,
+# BlueStar will create the blog post as a child page under it.
+NOTION_URL=https://www.notion.so/your-workspace/Your-Database-or-Page-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Optional: preselect publishing target (ghost|notion|local|discard)
+BLUESTAR_PUBLISH=notion
 ```
 
 ### Usage
@@ -125,6 +135,13 @@ python -m src.bluestar.main --config-check
 # Run tests
 uv run pytest tests/
 ```
+
+### Notion notes
+
+- "Publish" to Notion means creating a page under the provided Notion URL:
+  - If `NOTION_URL` is a database URL → the page is created in that database with structured properties.
+  - If `NOTION_URL` is a page URL → the page is created as a child of that page (metadata is embedded in content).
+- Ensure your Notion integration has access to the target URL (share the database/page with the integration).
 
 ## Development
 
