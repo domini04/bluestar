@@ -6,11 +6,9 @@
 
 ---
 
-## Project Overview
+## Overview
 
-BlueStar is an AI agent designed to automatically generate and publish developer blog posts by analyzing user-selected Git commits. The agent uses LangGraph for orchestration, Self-RAG for content refinement, and MCP for tool integration.
-
-**Core Workflow**: `Input Validation → Commit Fetching → Analysis → Content Generation → Human Review Loop → Publishing Decision → Optional Blog Publishing`
+This document outlines the development process, phases, and tasks for the BlueStar project. For a detailed explanation of the system's architecture, please refer to the [LangGraph Architecture Document](LangGraph_Architecture.md).
 
 ---
 
@@ -111,60 +109,10 @@ bluestar/
 
 ### 📋 **Tasks**
 
-#### **1. CommitFetcher Tool (MCP Style) ⭐ ENHANCED**
-```python
-# Enhanced API-first implementation with core context
-- Accept commit SHA and repository identifier (GitHub repo URL/path)
-- Extract commit data via GitHub API (primary approach)
-- **NEW: Core Context Fetching**
-  * Repository metadata (description, language, topics, stars)
-  * README summary (first 1000 characters for token efficiency)
-  * Primary configuration file (package.json, pyproject.toml, pom.xml, etc.)
-  * Project type detection (JavaScript/Node, Python, Java, Rust, Go)
-  * Framework identification from dependencies
-- Return structured commit data with enhanced project_structure field
-- Wrap as LangChain/LangGraph tool
-- Handle API errors (rate limits, invalid SHA, repo access)
-- Require GitHub token configuration
-- **Token budget: ~1,000-3,000 tokens for core context**
-- **API calls: 3-4 additional calls beyond basic commit fetch**
-```
-
-#### **2. InstructionManager (Basic)**
-```python
-# Simple prompt management
-- Load predefined instruction prompts
-- Basic template system for blog generation
-- Configurable prompt variations
-- Version control for prompt iterations
-```
-
-#### **3. ContentSynthesizer (Basic)**
-```python
-# Single LLM call node
-- Accept commit data and instructions
-- Generate blog post section via LLM
-- Output to console with formatting
-- Basic input validation
-- Token usage tracking
-```
-
-#### **4. Basic Agent Graph ⭐ ENHANCED**
-```python
-# Enhanced LangGraph workflow with progressive context enhancement
-Start → InputValidator → CommitFetcher(+CoreContext) → CommitAnalyzer → 
-ContentSynthesizer → HumanReviewLoop → [Branch: NeedsContext?] → 
-ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → PublishingDecision → End
-
-- User input collection and validation
-- **Enhanced commit fetching with repository context**
-- **Context-aware analysis with completeness scoring**
-- State passing between nodes with user instructions
-- **Progressive context enhancement based on user feedback**
-- Human review and iterative improvement with intelligent context routing
-- Optional blog publishing
-- Error propagation and recovery
-```
+- **Task 1**: Implement the `CommitFetcher` tool as specified in the architecture document, including the enhanced core context fetching capabilities.
+- **Task 2**: Implement the `ContentSynthesizer` node for basic blog post generation.
+- **Task 3**: Define the initial agent graph in LangGraph, connecting the core nodes for an end-to-end flow.
+- **Task 4**: Implement a basic instruction management system for passing user guidance to the synthesizer.
 
 ### ✅ **Success Criteria ⭐ UPDATED**
 - [ ] Single commit data successfully extracted via GitHub API **with core context**
@@ -199,34 +147,9 @@ ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → Publish
 
 ### 📋 **Tasks**
 
-#### **1. CommitAnalyzer Node ✅ COMPLETE**
-```python
-# LLM-powered analysis with comprehensive testing
-- ✅ Extract key changes, features, bug fixes from diffs (multi-file diff processing)
-- ✅ Categorize commit types (feature, fix, refactor, etc.) with high accuracy
-- ✅ Generate structured summaries with technical and business impact
-- ✅ Output comprehensive CommitAnalysis with context assessment
-- ✅ Handle different diff formats with intelligent concatenation
-- ✅ LangSmith tracing integration for production observability
-- ✅ Critical bug fix: Multi-file diff processing (previously only processed first file)
-- ✅ Quality evaluation framework with systematic assessment methodology
-```
-
-#### **2. Enhanced ContentSynthesizer**
-```python
-# Improved content generation
-- Accept structured analysis instead of raw commits
-- Generate complete blog post directly from CommitAnalysis
-- Better integration of technical details
-- Improved narrative flow
-- Single LLM call for efficiency
-```
-
-#### **3. Updated Agent Graph**
-```python
-# Simplified workflow (no outline generation step)
-Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
-```
+- **Task 1**: Implement the `CommitAnalyzer` node to perform LLM-powered analysis and generate a structured `CommitAnalysis` object as defined in the architecture document.
+- **Task 2**: Enhance the `ContentSynthesizer` to accept the structured `CommitAnalysis` object, improving content quality and narrative flow.
+- **Task 3**: Update the agent graph to reflect the new `CommitFetcher → CommitAnalyzer → ContentSynthesizer` workflow.
 
 ### ✅ **Success Criteria**
 - [x] Consistent analysis quality across commit types
@@ -296,30 +219,9 @@ Start → CommitFetcher → CommitAnalyzer → ContentSynthesizer → End
 
 ### 📋 **Tasks**
 
-#### **1. Blog Publishing & Saving Nodes ✅ COMPLETE**
-```python
-# Final disposition nodes
-- **PublishToGhostNode**: A non-interactive node to publish the final draft to Ghost CMS. Uses the GhostHtmlRenderer and a dedicated GhostAdminAPI client with JWT authentication.
-- **SaveLocalDraftNode**: A non-interactive node to save the final draft to the `output/` directory.
-```
-
-#### **2. Two-Stage Human-in-the-Loop**
-```python
-# Interactive refinement and decision-making
-- **HumanRefinementNode**: Presents the draft and asks the user for content feedback. Loops back to the ContentSynthesizer if feedback is given.
-- **PublishingDecisionNode**: After content is approved, asks the user whether to publish, save locally, or discard. Routes the workflow accordingly.
-```
-
-#### **3. Updated Agent Graph**
-```python
-# Complete workflow with dual HIL points
-Start → ... → ContentSynthesizer → [HIL 1] HumanRefinementNode →
-[Branch: Refine Content?] → (back to ContentSynthesizer) →
-[Branch: Content Approved] → [HIL 2] PublishingDecisionNode →
-[Branch: Publish] → PublishToGhostNode | PublishToNotionNode → End
-[Branch: Save] → SaveLocalDraftNode → End
-[Branch: Discard] → End
-```
+- **Task 1**: Implement the final disposition nodes (`PublishToGhost`, `PublishToNotion`, `SaveLocalDraft`) as specified in the architecture document.
+- **Task 2**: Implement the two-stage Human-in-the-Loop (HIL) workflow, including the `HumanRefinementNode` and `PublishingDecisionNode`.
+- **Task 3**: Update the agent graph to include the HIL and publishing branches.
 
 ### ✅ **Success Criteria**
 - [x] Successful blog post publishing
@@ -402,55 +304,11 @@ Choose one to implement:
 
 ### 📋 **Tasks**
 
-#### **1. ContextEnhancer Node**
-```python
-# LLM-powered context assessment and fetching
-- Analyze user feedback to identify quality gaps
-- Make intelligent decisions about which additional context to fetch
-- Fetch selective GitHub API data (PR context, recent commits, directory structure)
-- Filter and optimize context for token efficiency
-- Integrate enhanced context into existing CommitData structure
-- Handle API errors gracefully without breaking workflow
-```
-
-#### **2. Enhanced HumanReviewLoop Node**
-```python
-# Intelligent routing for context enhancement
-- Detect when user feedback indicates context gaps vs content issues
-- Route to ContextEnhancer when additional context would help
-- Route to direct content improvement for style/format issues
-- Prevent infinite loops with context enhancement attempts tracking
-- Maintain existing iteration limits and user experience
-```
-
-#### **3. Context Assessment LLM Prompting**
-```python
-# Sophisticated context need evaluation
-- Analyze current blog post quality and user feedback
-- Identify specific context gaps (business motivation, technical details, etc.)
-- Make targeted decisions about which GitHub API data to fetch
-- Provide reasoning for context decisions (debugging and optimization)
-- Balance context value against token/latency costs
-```
-
-#### **4. Enhanced GitHub API Integration**
-```python
-# Selective additional context fetching
-- Pull request context: Title, description, review comments
-- Recent commit history: Related changes to same files
-- Directory structure: Project organization for component mapping
-- Issue references: Business context from linked issues
-- Token-optimized data extraction and summarization
-- Rate limiting and error handling for additional API calls
-```
-
-#### **5. Updated Agent Graph**
-```python
-# Progressive enhancement workflow
-Start → InputValidator → CommitFetcher(+CoreContext) → CommitAnalyzer → 
-ContentSynthesizer → HumanReviewLoop → [Branch: NeedsContext?] → 
-ContextEnhancer → ContentSynthesizer → [Back to HumanReviewLoop] → PublishingDecision → End
-```
+- **Task 1**: Implement the `ContextEnhancer` node to intelligently fetch additional context based on user feedback.
+- **Task 2**: Enhance the `HumanReviewLoop` node to route to the `ContextEnhancer` when appropriate.
+- **Task 3**: Develop the LLM prompting strategy for assessing context needs.
+- **Task 4**: Enhance the GitHub API integration to selectively fetch additional data (e.g., PR context, issue references).
+- **Task 5**: Update the agent graph to include the progressive enhancement loop.
 
 ### ✅ **Success Criteria**
 - [ ] ContextEnhancer node accurately identifies when additional context is needed

@@ -21,33 +21,21 @@ BlueStar analyzes Git commits to understand development progress and context, th
 - 🔄 **Self-RAG**: Self-reflection and refinement for quality improvement *(Planned)*
 - 👤 **Human-in-the-Loop**: Interactive content refinement and publishing decisions
 
+## Architecture
+
+BlueStar is built on a modular, stateful workflow orchestrated by **LangGraph**. The architecture is designed for clarity, maintainability, and robustness, with a clear separation between workflow orchestration, state management, and individual node operations.
+
+For a detailed explanation of the components, data flow, and design principles, please see the [**LangGraph Architecture Document**](LangGraph_Architecture.md).
+
 ## Development Status
 
-🚧 **Currently in development** - Following phased development approach:
+🚧 **Currently in active development.**
 
-- **Phase 0**: Foundation Setup ✅ *(Completed)*
-  - Project structure, dependencies, configuration management
-  - Data models (CommitData, CommitAnalysis, GhostBlogPost)
-  - Custom exception handling and testing infrastructure
-- **Phase 1**: Core MVP (single commit → blog post) ✅ *(Completed)*
-  - ✅ GitHub API client with authentication and rate limiting
-  - ✅ Commit data parsing and structured models
-  - ✅ Real GitHub API integration tested successfully
-  - ✅ LangGraph architecture designed with comprehensive workflow
-  - ✅ AgentState structure finalized with human-in-the-loop integration
-  - ✅ Error handling strategy leveraging existing exception hierarchy
-  - ✅ Workflow control decisions (progress tracking, metrics separation)
-  - ✅ Performance metrics strategy defined (separate implementation)
-  - ✅ **Enhanced CommitFetcher**: Core context integration (repo metadata, README, config)
-  - ✅ **InputValidator**: Structured input validation and normalization
-  - ✅ **CommitAnalyzer**: LLM-powered analysis with quality evaluation framework
-  - ✅ **ContentSynthesizer**: Blog generation with project context
-  - ✅ **HumanReviewLoop**: Interactive improvement workflow
-  - ✅ **Publishing Nodes**: Final output nodes for saving locally or publishing
-  - ✅ **End-to-end Workflow Testing**: Complete orchestration from input to final output (local save path)
-- **Phase 2**: Analysis Enhancement & Multi-commit support 🔄 *(Next Priority)*
-- **Phase 3**: Publishing Integration & Human-in-the-Loop ✅ *(Completed)*
-- **Phase 4**: Advanced Features & Final Packaging 🔄 *(Planned)*
+The project follows a phased development plan. Core functionalities for generating a blog post from a single commit are complete, including the human-in-the-loop refinement and publishing steps. 
+
+The next major priority is implementing multi-commit analysis.
+
+For a detailed breakdown of past, current, and future development phases, please see the [**BlueStar Development Process document**](BlueStar_Development_Process.md).
 
 ## Technology Stack
 

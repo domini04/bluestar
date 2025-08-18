@@ -25,3 +25,5 @@ logs/
 
 #locally saved drafts
 output/
+
+.gemini/

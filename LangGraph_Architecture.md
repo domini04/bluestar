@@ -5,15 +5,18 @@
 
 ---
 
-## Overview
+## Architectural Overview
 
-BlueStar uses LangGraph to orchestrate an AI-powered workflow that transforms Git commits into high-quality developer blog posts. It is designed as a standalone local application to provide a rich, interactive experience. The architecture emphasizes user control, iterative improvement, and flexible publishing options.
+BlueStar is built on a modular, stateful workflow orchestrated by **LangGraph**. The architecture is designed for clarity, maintainability, and robustness, with a clear separation between workflow orchestration, state management, and individual node operations. It emphasizes user control, iterative improvement, and flexible publishing options.
 
-**Core Workflow**: 
-```
-Input Validation → Commit Fetching → Analysis → Content Generation → 
-Human Review Loop → Publishing Decision → Optional Blog Publishing
-```
+For a high-level overview of the project, see the [README.md](README.md). For the development roadmap, see the [BlueStar Development Process](BlueStar_Development_Process.md) document.
+
+### Core Principles
+
+1.  **Orchestration (The Brain):** The `StateGraph` in `src/bluestar/agents/graph.py` defines the nodes and conditional edges that drive the workflow.
+2.  **State Management (The Memory):** A central `AgentState` dataclass in `src/bluestar/agents/state.py` acts as the single, persistent source of truth that is passed between nodes.
+3.  **Modular Nodes (The Workers):** Each step is a self-contained node in `src/bluestar/agents/nodes/`, responsible for a single task.
+4.  **Data Contracts (The Language):** Pydantic models in `src/bluestar/formats/` ensure consistent, validated data structures, especially for LLM outputs.
 
 ---
 
@@ -29,11 +32,64 @@ graph TD
     F -- "User provides feedback" --> E;
     F -- "User is satisfied" --> G{Publishing Decision HIL};
     G -- "Publish to Ghost" --> H(PublishToGhostNode);
+    G -- "Publish to Notion" --> J(PublishToNotionNode);
     G -- "Save Locally" --> I(SaveLocalDraftNode);
     G -- "Discard" --> Z(End);
     H --> Z;
     I --> Z;
+    J --> Z;
 ```
+
+---
+
+## How the Architecture Works
+
+The application is built as a stateful, modular workflow orchestrated by **LangGraph**. The architecture is designed to be robust and maintainable, with a clear separation of concerns.
+
+1.  **Orchestration (The Brain):**
+    *   The core of the application is the `StateGraph` defined in `src/bluestar/agents/graph.py`.
+    *   This graph defines all the steps (nodes) of the process and the transitions (edges) between them.
+    *   It uses conditional edges to handle branching logic, such as error handling, iterative content refinement, and final publishing choices.
+
+2.  **State Management (The Memory):**
+    *   A central `AgentState` dataclass (`src/bluestar/agents/state.py`) acts as the single source of truth.
+    *   This object is passed through the entire graph, and each node reads from and writes to it. It holds everything from the initial user input to the final generated blog post and any errors that occur.
+
+3.  **Modular Nodes (The Workers):**
+    *   Each distinct step in the workflow is implemented as a self-contained "node" in the `src/bluestar/agents/nodes/` directory.
+    *   Examples include `commit_fetcher_node`, `commit_analyzer_node`, and `content_synthesizer_node`. Each node has a single responsibility, making the system easy to understand and modify.
+
+4.  **Data Contracts (The Language):**
+    *   The `src/bluestar/formats/` directory defines strict data structures using Pydantic models.
+    *   These models (`CommitData`, `CommitAnalysis`, `BlogPostOutput`, etc.) act as "data contracts" that ensure information flows between nodes in a consistent and validated format. This is especially important for getting reliable, structured output from the LLMs.
+
+5.  **Core Services & Tools (The Foundation):**
+    *   The `src/bluestar/core/` directory provides foundational components like a generic `LLMClient` (which can be configured for different providers like OpenAI, Gemini, etc.) and a custom exception hierarchy.
+    *   The `src/bluestar/tools/` directory contains clients for interacting with external services, most notably the `GitHubClient`, which handles all communication with the GitHub API.
+
+### The Step-by-Step Flow
+
+1.  **Initiation:** The process starts in `src/bluestar/main.py` or `cli.py`, which collects the repository and commit information from the user.
+
+2.  **Input Validation:** The `input_validator_node` checks if the repository and commit SHA formats are valid.
+
+3.  **Fetching:** The `commit_fetcher_node` uses the `GitHubClient` to fetch the commit message, file diffs, and additional "core context" like the project's README and configuration files. This is parsed into a `CommitData` object.
+
+4.  **Analysis:** The `commit_analyzer_node` takes the `CommitData`, constructs a detailed prompt, and sends it to an LLM. The LLM's job is to analyze the code changes and return a structured `CommitAnalysis` object, which includes a technical summary, business impact, and a suggested narrative angle.
+
+5.  **Synthesis:** The `content_synthesizer_node` uses the `CommitAnalysis` to generate the first draft of the blog post. It calls the LLM with a prompt focused on creative writing, producing a platform-agnostic `BlogPostOutput` object.
+
+6.  **Human Refinement Loop:**
+    *   The `human_refinement_node` displays the draft to the user.
+    *   The user is asked if they are satisfied. If not, they can provide feedback.
+    *   The graph loops back to the `content_synthesizer_node`, which now uses a different "refinement" prompt to apply the user's feedback to the existing draft.
+    *   This loop continues until the user is satisfied or a maximum number of iterations is reached.
+
+7.  **Publishing Decision:** Once the content is approved, the `publishing_decision_node` asks the user what to do next: publish to Ghost, publish to Notion, save locally, or discard.
+
+8.  **Final Action:** Based on the user's choice, the graph routes to the appropriate final node (`publish_to_ghost_node`, `publish_to_notion_node`, or `save_local_draft_node`) to execute the action. These nodes use renderer utilities to convert the generic `BlogPostOutput` into the specific format required by each platform.
+
+9.  **Completion:** The workflow ends.
 
 ---
 
