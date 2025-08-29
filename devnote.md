@@ -281,3 +281,11 @@ CommitData → CommitAnalysis → GhostBlogPost
 - **Decision**: Enforce provider allowlist (openai, claude, gemini, grok) and accept free-form model; build LLM client on demand; support CLI/env overrides (CLI > env > defaults).
 - **Why**: Governance + flexibility, avoid brittle model catalogs, remove global singleton.
 - **Impact**: Users pick any model within allowed providers; invalid provider fails early; invalid model surfaces at client creation; defaults future‑proofed (OpenAI→gpt‑5, Grok→grok‑4‑0709).
+
+---
+
+### **August 21, 2025 - LangGraph State Management: Caller-Owned `thread_id`**
+
+- **Issue**: The LangGraph checkpointer requires a `thread_id` to manage persistent state across runs. The architectural question was whether the agent should manage this ID internally or if the client invoking the agent should be responsible for it.
+- **Decision**: The responsibility for generating and managing the `thread_id` belongs exclusively to the caller (e.g., Streamlit UI, CLI, test suites). The caller must provide the `thread_id` within the `configurable` dictionary on every invocation.
+- **Reasoning**: This enforces a clear separation of concerns. The agent remains a stateless, reusable "engine," while the caller handles session management. This allows the caller to control conversation history and resume sessions (e.g., on a UI refresh), improves testability by allowing deterministic state checks, and keeps the agent portable across different environments without modification.

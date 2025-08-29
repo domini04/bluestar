@@ -29,11 +29,13 @@ For a detailed explanation of the components, data flow, and design principles, 
 
 ## Development Status
 
-🚧 **Currently in active development.**
+✅ **Core CLI Functionality Complete**
 
-The project follows a phased development plan. Core functionalities for generating a blog post from a single commit are complete, including the human-in-the-loop refinement and publishing steps. 
+The core feature set of BlueStar is complete and available for use via the command-line interface (CLI). This includes fetching single commits, AI-powered analysis, content generation, a human-in-the-loop refinement process, and publishing to supported platforms.
 
-The next major priority is implementing multi-commit analysis.
+Future development will focus on the following priorities:
+1.  **GUI Implementation**: Creating a graphical user interface for a more interactive user experience.
+2.  **Enhanced Context Gathering**: Improving the agent's ability to understand project context for more insightful blog posts. This includes multi-commit analysis.
 
 For a detailed breakdown of past, current, and future development phases, please see the [**BlueStar Development Process document**](BlueStar_Development_Process.md).
 
