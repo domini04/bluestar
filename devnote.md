@@ -180,7 +180,6 @@ CommitData → CommitAnalysis → GhostBlogPost
 ### **July 11, 2025 - Performance Metrics Strategy Requirement**
 
 **Issue**: BlueStar needs measurement system for improving blog post generation quality and user experience.
-
 **Decision**: Implement dedicated metrics system targeting blog post quality as primary focus area.
 
 **Key Metrics Identified**:
@@ -289,3 +288,27 @@ CommitData → CommitAnalysis → GhostBlogPost
 - **Issue**: The LangGraph checkpointer requires a `thread_id` to manage persistent state across runs. The architectural question was whether the agent should manage this ID internally or if the client invoking the agent should be responsible for it.
 - **Decision**: The responsibility for generating and managing the `thread_id` belongs exclusively to the caller (e.g., Streamlit UI, CLI, test suites). The caller must provide the `thread_id` within the `configurable` dictionary on every invocation.
 - **Reasoning**: This enforces a clear separation of concerns. The agent remains a stateless, reusable "engine," while the caller handles session management. This allows the caller to control conversation history and resume sessions (e.g., on a UI refresh), improves testability by allowing deterministic state checks, and keeps the agent portable across different environments without modification.
+
+
+### **November 29, 2025 - Evaluation Strategy: Shift to Binary Metrics**
+- **Issue**: The initial 1-5 scalar scoring system for evaluating LLM outputs introduced ambiguity, subjectivity, and inconsistency in both manual and automated reviews. "Good" vs "Excellent" (3 vs 4) was often indistinguishable.
+- **Decision**: Transitioned the entire evaluation framework to Binary (Pass/Fail) Metrics based on criteria from Shankar et al. (2024).
+- **Reasoning**:
+  - **Clarity**: Binary criteria (e.g., "Did the post mention business impact? Yes/No") eliminate subjective grading scales.
+  - **Actionability**: A "Fail" provides a clear signal that a specific requirement was missed, making prompt engineering and debugging more precise.
+  - **Robustness**: Reduces "Criteria Drift" where the definition of a score changes over time. Binary assertions are easier to verify and automate reliably with LLM-as-a-Judge.
+- **Impact**:
+  - Updated `performance_metrics.md` and `COMMIT_ANALYZER_EVALUATION.md` to reflect binary criteria.
+  - Simplified the automated evaluation roadmap to focus on boolean assertions rather than complex scoring logic.
+  - Established a clearer feedback loop: Fail -> Prompt Fix -> Pass.
+
+---
+
+### **December 8, 2025 - Evaluation Data Flow: Exposing Internal State for Faithfulness**
+
+- **Issue**: The automated evaluation pipeline (`faithfulness_evaluator`) required comparing the generated blog post against the original Git commit diff to detect hallucinations. However, the LangSmith dataset only stored minimal input metadata (`repo_identifier`, `commit_sha`), not the massive full diff content. This left the Evaluator "blind" to the source of truth.
+- **Decision**: Modified the evaluation wrapper (`target_app` in `run_eval.py`) to extract the `commit_data` from the application's final AgentState and return it alongside the blog post. The evaluators were updated to consume this runtime-fetched diff instead of relying on static dataset inputs.
+- **Reasoning**:
+  - **Accuracy**: Ensures the Judge evaluates against the exact diff the Agent used.
+  - **Efficiency**: Avoids storing gigabytes of redundant diff data in the LangSmith dataset.
+  - **Robustness**: Evaluator pipeline works dynamically with any valid commit input without requiring dataset pre-processing.

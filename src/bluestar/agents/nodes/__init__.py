@@ -13,6 +13,7 @@ from .human_refinement import human_refinement_node
 from .publishing_decision import publishing_decision_node
 from .save_local_draft import save_local_draft_node
 from .publish_to_ghost import publish_to_ghost_node
+from .publish_to_notion import publish_to_notion_node
 
 __all__ = [
     "input_validator_node",
@@ -23,4 +24,5 @@ __all__ = [
     "publishing_decision_node",
     "save_local_draft_node",
     "publish_to_ghost_node",
+    "publish_to_notion_node",
 ] 

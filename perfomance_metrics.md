@@ -6,73 +6,74 @@
 
 ### **Primary Metrics Targets**
 
-#### **1. Blog Post Quality Metrics** 🎯 **PRIMARY FOCUS**
+#### **1. Blog Post Quality Metrics** 🎯 **PRIMARY FOCUS (Binary Pass/Fail)**
+Moving from scalar scoring to binary assertions for clarity and robustness.
+
 **Content Quality Assessment:**
-- **Readability scores**: Flesch-Kincaid, Gunning Fog index for appropriate technical level
-- **Technical accuracy**: Does explanation match code changes? Are examples correct?
-- **Completeness coverage**: Are all major changes explained? Missing important details?
-- **Narrative coherence**: Does the post flow logically from problem → solution → impact?
+- **Readability**: **Pass/Fail** (Pass: Flesch-Kincaid Grade Level < 12)
+- **Technical Accuracy**: **Pass/Fail**
+  - *Pass*: Explanation matches code changes without factual errors or hallucinations.
+  - *Fail*: Contains at least one technical inaccuracy or misinterpretation of the code.
+- **Completeness Coverage**: **Pass/Fail**
+  - *Pass*: All major changes in the diff are mentioned.
+  - *Fail*: Significant file changes or logic updates are ignored.
+- **Narrative Coherence**: **Pass/Fail**
+  - *Pass*: Flows logically (Problem → Solution → Impact) with clear transitions.
+  - *Fail*: Disjointed paragraphs or abrupt jumps between topics.
 
 **Structure & Format Quality:**
-- **Word count optimization**: Target range analysis (800-1500 words optimal?)
-- **Code-to-explanation ratio**: Appropriate balance of code examples and explanations
-- **Header organization**: Proper use of sections, subsections, formatting
-- **SEO elements**: Keywords, meta descriptions, technical term usage
+- **Word Count**: **Pass/Fail** (Pass: Within 800-1500 words)
+- **Code-to-Explanation Ratio**: **Pass/Fail** (Pass: Code blocks do not exceed 40% of total content)
+- **Header Organization**: **Pass/Fail** (Pass: Uses proper markdown hierarchy H1>H2>H3)
+- **SEO Elements**: **Pass/Fail** (Pass: Includes meta description and at least 3 relevant keywords)
 
 #### **2. User Experience Metrics** 📊 **SECONDARY FOCUS**
 **Iteration Efficiency:**
-- **Average iterations per post**: How often do users request improvements?
-- **First draft acceptance rate**: Percentage of users satisfied with initial generation
-- **Common feedback patterns**: What improvements are most frequently requested?
-- **User satisfaction indicators**: Feedback sentiment analysis
+- **First Draft Acceptance**: **Pass/Fail** (User accepts without requesting changes)
+- **Iteration Count**: Number of feedback loops (Target: 0-1)
+- **User Satisfaction**: **Pass/Fail** (Inferred from "Publish" vs "Discard" decision)
 
 #### **3. System Performance Metrics** ⚡ **OPERATIONAL FOCUS**
 **Processing Efficiency:**
-- **End-to-end workflow time**: Input collection → final draft completion
-- **LLM token usage tracking**: Cost analysis per blog post, optimization opportunities
-- **API call efficiency**: GitHub API requests, rate limit utilization patterns
+- **End-to-end workflow time**: Target < 60s
+- **LLM token usage**: Cost per post
+- **API call efficiency**: GitHub API requests count
 
-#### **4. Analysis Quality Metrics** 🔍 **INDIRECT QUALITY INDICATOR**
+#### **4. Analysis Quality Metrics** 🔍 **INDIRECT QUALITY INDICATOR (Binary)**
 **Commit Analysis Accuracy:**
-- **Change categorization precision**: Bug fix vs feature vs refactor classification accuracy
-- **Technical detail extraction**: Are critical changes identified and prioritized correctly?
-- **Context understanding**: Does analysis capture the "why" and business impact?
+- **Categorization**: **Pass/Fail** (Is the `change_type` correct?)
+- **Technical Detail**: **Pass/Fail** (Are key technical decisions correctly identified?)
+- **Context Understanding**: **Pass/Fail** (Does it correctly identify the project type and business impact?)
 
 ### **Key Implementation Questions**
 
 #### **Quality Measurement Approach**
 1. **When to measure blog post quality?**
-   - After ContentSynthesizer (before user review)?
-   - After user feedback (to understand satisfaction gaps)?
-   - Post-publication (if tracking published content engagement)?
+   - Post-generation (Automated Eval with LLM-as-a-Judge)
+   - Post-user-review (Manual review of traces)
 
 2. **How to implement automated quality scoring?**
-   - **LLM-based assessment**: Use separate LLM to score generated content quality
-   - **Rule-based scoring**: Automated readability, structure, completeness checks
-   - **Hybrid approach**: Combine automated metrics with LLM judgment
+   - **LLM-as-a-Judge**: Binary assertions (True/False) for subjective criteria.
+   - **Code-based Assertions**: Regex/Python checks for formatting/length.
 
 3. **What triggers quality improvement cycles?**
-   - Low automated quality scores → Adjust generation prompts
-   - High iteration rates → Improve initial content quality
-   - Recurring feedback patterns → Update system instructions
+   - High failure rate in automated evals → Adjust prompts.
+   - Recurring negative feedback patterns → Update system instructions.
 
 #### **User Feedback Analysis**
 1. **How to parse improvement requests for patterns?**
-   - Categorize feedback types (clarity, technical depth, examples, structure)
-   - Track which prompt adjustments reduce specific feedback types
-   - Identify content areas that frequently need improvement
+   - **Open Coding**: Manual categorization of failure modes from logs.
+   - **Axial Coding**: LLM-assisted clustering of error types.
 
-2. **How to measure user satisfaction without explicit ratings?**
-   - Feedback presence as dissatisfaction indicator (as decided earlier)
-   - Iteration count as quality proxy
-   - Time spent in review loop as engagement measure
+2. **How to measure user satisfaction?**
+   - **Boolean Satisfaction**: User Satisfied (True) if no feedback loop triggered.
 
 #### **System Optimization Targets**
-1. **Primary optimization goal**: Increase first draft acceptance rate
-2. **Secondary goals**: Reduce average iterations, improve technical accuracy
-3. **Operational goals**: Optimize token usage, reduce processing time
+1. **Primary optimization goal**: Increase First Draft Acceptance Rate (Pass Rate)
+2. **Secondary goals**: Reduce Iteration Count
+3. **Operational goals**: Optimize token usage
 
 ### **Implementation Priority**
-- **Phase 1**: Basic automated quality scoring (readability, structure, completeness)
-- **Phase 2**: User feedback pattern analysis and prompt optimization
-- **Phase 3**: Advanced LLM-based quality assessment and continuous improvement
+- **Phase 1**: Manual Review & Open Coding (Identify Failure Modes)
+- **Phase 2**: Automated Binary Evals (LLM-as-a-Judge & Code Assertions)
+- **Phase 3**: CI/CD Integration & Continuous Monitoring

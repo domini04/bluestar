@@ -106,21 +106,21 @@ BLUESTAR_PUBLISH=notion
 
 ```bash
 # Interactive CLI mode (development)
-python -m src.bluestar.main
+uv run python -m src.bluestar.main
 
 # CLI with command line arguments
-python -m src.bluestar.main --repo microsoft/vscode --commit abc123def456
+uv run python -m src.bluestar.main --repo microsoft/vscode --commit abc123def456
 
 # Override LLM selection from CLI (provider allowlist + free-form model)
-python -m src.bluestar.main \
+uv run python -m src.bluestar.main \
   --repo microsoft/vscode --commit abc123def456 \
   --llm-provider openai --llm-model gpt-5
 
 # CLI with additional instructions
-python -m src.bluestar.main --repo https://github.com/microsoft/vscode --commit abc123def456 --instructions "Focus on performance improvements"
+uv run python -m src.bluestar.main --repo https://github.com/microsoft/vscode --commit abc123def456 --instructions "Focus on performance improvements"
 
 # Check configuration
-python -m src.bluestar.main --config-check
+uv run python -m src.bluestar.main --config-check
 
 # Run tests
 uv run pytest tests/

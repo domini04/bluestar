@@ -114,13 +114,17 @@ def _extract_prompt_data(state: AgentState) -> Dict[str, Any]:
     # Extract project context components
     repository_metadata = project_context.get("repository_metadata", {})
     readme_summary = project_context.get("readme_summary", "No README available")
-    primary_config = project_context.get("primary_config", {})
+    primary_config = project_context.get("primary_config") # Keep as None if not found
     project_type = project_context.get("project_type", "unknown")
     
     # Format metadata as readable text
     repo_meta_text = f"Description: {repository_metadata.get('description', 'None')}, Language: {repository_metadata.get('language', 'Unknown')}, Topics: {repository_metadata.get('topics', [])}"
-    config_text = f"File: {primary_config.get('file_name', 'None')}, Type: {primary_config.get('project_type', 'unknown')}"
     
+    if primary_config:
+        config_text = f"File: {primary_config.get('file_name', 'None')}, Type: {primary_config.get('project_type', 'unknown')}"
+    else:
+        config_text = "No primary configuration file found."
+        
     # Generate format instructions for prompt template
     from langchain.output_parsers import PydanticOutputParser
     from ...formats.commit_data import CommitAnalysis
@@ -174,7 +178,7 @@ def commit_analyzer_node(state: AgentState) -> AgentState:
         logger.debug("Initializing LLM client for commit analysis")
         llm = LLMClient().get_client(
             temperature=0.3,      # Conservative for factual analysis
-            max_tokens=200000,    # Generous token budget as requested
+            max_tokens=4096,      # Reduced from 200k to prevent duplication/run-on
             timeout=60            # 1 minute timeout as requested
         )
         
