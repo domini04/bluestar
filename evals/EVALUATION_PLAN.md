@@ -33,6 +33,7 @@ We will implement the following industry-standard process using **LangSmith**.
     *   **Open Coding**: Write specific, detailed notes on the *first* upstream error for each trace (e.g., "CommitFetcher missed README context", not just "bad output").
     *   **Owner**: Domain expert (Benevolent Dictator) owns the "taste" and consistency.
     *   **Saturation**: Continue until no new error types appear.
+*   **Status**: **Completed (Dec 2025)**. Identified core issues: Hallucination of code snippets.
 
 ### Step 2: Categorization (Axial Coding)
 *   **Goal**: Synthesize raw notes into actionable failure categories.
@@ -41,12 +42,14 @@ We will implement the following industry-standard process using **LangSmith**.
     *   **Refinement**: Manually review and refine categories to be specific (e.g., "Context Missing: File too large" vs "Context Error").
     *   **Quantification**: Count frequency to prioritize the "biggest problems".
     *   **Decision**: Decide which failures need automated evals vs. simple prompt fixes.
+*   **Status**: **Skipped**. Manual review provided sufficient clarity on the primary failure mode ("Tutorial Writer Hallucination").
 
 ### Step 3: Automated Evaluation Implementation
 *   **Goal**: Build functions to automatically score outputs (True/False).
 *   **Types**:
     1.  **Code-based Assertions**: For objective criteria (JSON valid, max length, specific keywords). Cheap & fast.
     2.  **LLM-as-a-Judge**: For subjective criteria (Tone, Business Impact clarity). Tightly scoped, binary prompt.
+*   **Status**: **Completed**. Implemented `structure`, `faithfulness`, and `core_accuracy` evaluators.
 
 ### Step 4: Validate the Validators (Alignment)
 *   **Goal**: Ensure automated metrics match human judgment.
@@ -54,6 +57,7 @@ We will implement the following industry-standard process using **LangSmith**.
     *   **Measure Agreement**: Compare LLM-Judge outputs vs. Human Ground Truth (from Step 1).
     *   **Confusion Matrix**: Analyze disagreements (False Positives vs. False Negatives).
     *   **Iterate**: Tune the Judge prompt until misalignment is minimized.
+*   **Status**: **Completed**. Verified that Faithfulness evaluator correctly caught known hallucination cases.
 
 ### Step 5: Iteration & Operationalization
 *   **Goal**: Continuous improvement.
@@ -61,6 +65,7 @@ We will implement the following industry-standard process using **LangSmith**.
     *   **CI Integration**: Run aligned evals as unit tests.
     *   **Online Monitoring**: Track failure rates in production.
     *   **Improvement Flywheel**: Use eval data to drive agent/prompt updates.
+*   **Status**: **In Progress**. First iteration loop (Prompt Tuning) completed, raising Faithfulness score from 0.7 to 0.8.
 
 ## 3. Applicability to BlueStar
 
@@ -72,6 +77,5 @@ This process is **highly applicable** and recommended for BlueStar because:
 4.  **Cost Efficiency**: Moving to binary pass/fail allows for cheaper, smaller LLMs to act as judges for specific criteria compared to asking a large model to "rate everything out of 5".
 
 ## Next Steps
-1.  Update `perfomance_metrics.md` to reflect the Binary Metric strategy.
-2.  Prepare the **Dataset Creation Script** to fetch runs from LangSmith for Step 1.
-
+1.  **Monitor**: Keep an eye on the remaining 20% of faithfulness failures in future runs.
+2.  **Expand**: Consider adding a "Narrative Quality" evaluator in future cycles.

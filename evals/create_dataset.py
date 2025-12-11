@@ -14,7 +14,7 @@ if not os.getenv("LANGCHAIN_API_KEY") and os.getenv("LANGSMITH_API_KEY"):
     os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
     print(f"ℹ️  Mapped LANGSMITH_API_KEY to LANGCHAIN_API_KEY")
 
-DATASET_NAME = "BlueStar Evaluation Dataset"
+DATASET_NAME = "BlueStar Evaluation Dataset v2"
 COMMIT_LIMIT = 10
 
 # Configuration: Local Path -> Repo Identifier

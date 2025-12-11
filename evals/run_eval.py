@@ -21,9 +21,10 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from src.bluestar.agents.graph import create_app
 from src.bluestar.agents.state import AgentState
+from src.bluestar.utils.rendering import render_body_to_string
 from evals.evaluators import structure_evaluator, faithfulness_evaluator, core_accuracy_evaluator
 
-DATASET_NAME = "BlueStar Evaluation Dataset"
+DATASET_NAME = "BlueStar Evaluation Dataset v2"
 EXPERIMENT_PREFIX = "bluestar-v1-initial-review"
 
 def target_app(inputs: dict) -> dict:
@@ -75,7 +76,11 @@ def target_app(inputs: dict) -> dict:
             result = app.invoke(initial_state, config=config)
             
             if result.get("blog_post"):
-                final_content = result["blog_post"].content
+                post = result["blog_post"]
+                # Convert structured Pydantic object to Markdown string for evaluation
+                final_content = f"# {post.title}\n\n"
+                final_content += f"**{post.summary}**\n\n"
+                final_content += render_body_to_string(post.body)
             else:
                 final_content = "No blog post generated."
                 
